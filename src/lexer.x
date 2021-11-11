@@ -20,6 +20,10 @@ $white+ ; --ignore white chars
 $digit+ { \s -> NUM (read s) }
 $digit+"."$digit+ { \s -> REAL (read s) }
 
+-- comments
+"//".* ;
+"/*"(\s|\n|.)*"*/" ;
+
 -- reserved
 if { \_ -> IF }
 break { \_ -> BREAK }
