@@ -3,7 +3,6 @@ dist-*
 cabal-dev
 *.o
 *.hi
-*.hs
 *.hie
 *.chi
 *.chs.h
@@ -22,3 +21,4 @@ cabal.project.local
 cabal.project.local~
 .HTF/
 .ghc.environment.*
+lexer.hs
