@@ -18,7 +18,6 @@ $white+ ; --ignore white chars
 
 -- numbers
 $digit+ { \s -> NUM (read s) }
-$digit+"."$digit+ { \s -> REAL (read s) }
 
 -- comments
 "//".* ;
@@ -70,7 +69,6 @@ $alpha($alpha|$digit)* { \s -> ID s }
 {
 data Token
   = NUM Int 
-  | REAL Double 
   | IF
   | BREAK 
   | DO 
