@@ -3,14 +3,14 @@ version:             0.0.1
 synopsis:            Tiger
 description:         Simple Tiger Compiler
 author:              André Cerqueira & Simão Gautier
-maintainer:          up201804991 & up2018
+maintainer:          up201804991 & up201805175
 category:            Language
 build-type:          Simple
 cabal-version:       >=1.10
                      
 executable Main
   main-is:             Main.hs
-  other-modules:       Lexer
+  other-modules:       Lexer,Parser
   build-tools:         alex
   build-depends:       base,array
   hs-source-dirs:      src

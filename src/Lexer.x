@@ -30,6 +30,7 @@ of { \_ -> OF }
 then { \_ -> THEN }
 var { \_ -> VAR }
 while { \_ -> WHILE }
+to { \_ -> TO }
 
 -- punctuations signs
 "," { \_ -> COMMA }
@@ -75,6 +76,7 @@ data Token
   | END 
   | FOR 
   | FUNCTION 
+  | TO
   | IN 
   | LET 
   | OF 

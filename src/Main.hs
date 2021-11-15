@@ -1,8 +1,9 @@
 module Main where
 
 import Lexer
+import Parser
 
 main :: IO ()
 main = do
-  passed <- getContents
-  print (alexScanTokens passed)
+  input <- getContents
+  print (parser $ alexScanTokens input)
