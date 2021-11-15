@@ -16,9 +16,6 @@ tokens :-
 
 $white+ ; --ignore white chars
 
--- numbers
-$digit+ { \s -> NUM (read s) }
-
 -- reserved
 if { \_ -> IF }
 break { \_ -> BREAK }
@@ -63,8 +60,9 @@ while { \_ -> WHILE }
 "//".* ;
 "/*"(\s|\n|.)*"*/" ;
 
+-- Types 
+$digit+ { \s -> NUM (read s) }
 $alpha($alpha|$digit)* { \s -> ID s }
-
 \".*\" { \s -> STRING s}
 
 {
