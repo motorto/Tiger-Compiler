@@ -8,7 +8,7 @@
 
 -- Regex Expressions
 -- $white = [\ \t\n\r\"\\]
-$white = [\ \t\n\r]
+$white = [\ \t\n\r\s]
 $digit = [0-9]
 $alpha = [_a-zA-Z]
 
@@ -18,10 +18,6 @@ $white+ ; --ignore white chars
 
 -- numbers
 $digit+ { \s -> NUM (read s) }
-
--- comments
-"//".* ;
-"/*"(\s|\n|.)*"*/" ;
 
 -- reserved
 if { \_ -> IF }
@@ -63,8 +59,13 @@ while { \_ -> WHILE }
 "|" { \_ -> OR}
 ":=" { \_ -> ASSIGN}
 
+-- comments
+"//".* ;
+"/*"(\s|\n|.)*"*/" ;
+
 $alpha($alpha|$digit)* { \s -> ID s }
 
+\".*\" { \s -> STRING s}
 
 {
 data Token
@@ -104,6 +105,7 @@ data Token
   | OR 
   | ASSIGN
   | ID String 
+  | STRING String 
   deriving (Eq, Show)
 }
 
