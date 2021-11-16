@@ -10,7 +10,7 @@ cabal-version:       >=1.10
                      
 executable Main
   main-is:             Main.hs
-  other-modules:       Lexer,Parser
+  other-modules:       Lexer
   build-tools:         alex
   build-depends:       base,array
   hs-source-dirs:      src
