@@ -11,14 +11,54 @@ import Lexer
 
 %token
 
-num { NUM $$ }
+-- reserved 
+if { IF }
+break { BREAK }
+do { DO }
+else { ELSE }
+end { END }
+for { FOR }
+function { FUNCTION }
+in { IN }
+let { LET }
+of { OF }
+then { THEN }
+var { VAR }
+while { WHILE }
+to { TO }
+
+-- punctuations signs
+',' { COMMA }
+':' { COLLON }
+';' { SEMI_COLLON }
+'(' { LPARENTH }
+')' { RPARENTH }
+'[' { LSQUARE_PARENTH }
+']' { RSQUARE_PARENTH }
+
+-- operators
 '+' { PLUS }
 '-' { MINUS }
 '*' { TIMES }
 '/' { DIVIDED }
+'%' { MOD }
+'=' { EQUAL }
+'<>' { NOT_EQUALS }
+'<' { LESS_THEN }
+'>' { BIGGER_THEN }
+'>=' { BIGGER_OR_EQUAL_THEN }
+'<=' { LESS_OR_EQUAL_THEN }
+'&' { AND }
+'|' { OR }
+':=' { ASSIGN }
+
+-- Types
+num { NUM $$ }
+id {ID $$}
+string {STRING $$}
 
 -- Precedences 
-
+%nonassoc '<' '>' '<=' '>='
 %left '+' '-'
 %left '*' '/'
 
