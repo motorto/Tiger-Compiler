@@ -34,6 +34,9 @@ then { THEN }
 var { VAR }
 while { WHILE }
 to { TO }
+print{ PRINT }
+printi{ PRINTI }
+scani{ SCANI }
 
 -- punctuations signs
 ',' { COMMA }
@@ -95,6 +98,9 @@ Exp : num { Num $1 }
     | if Exp then Exp { If $2 $4 }
     | if Exp then Exp else Exp  { IfElse $2 $4 $6 }
     | while Exp do Exp { While $2 $4 }
+    | print '(' Exp ')' { Print $3 }
+    | printi '(' Exp ')' { Printi $3 }
+    | scani '(' Exp ')' { Scani $3 }
 
 LValue : id { $1 }
 
@@ -125,6 +131,9 @@ data Exp = Num Int
          | If Exp Exp
          | IfElse Exp Exp Exp
          | While Exp Exp
+         | Print Exp 
+         | Printi Exp 
+         | Scani Exp 
          deriving Show
 
 parseError :: [Token] -> a
