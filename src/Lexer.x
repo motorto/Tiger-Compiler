@@ -1,5 +1,5 @@
 -- vim: filetype=haskell 
-
+--
 {
   module Lexer where
 }
@@ -63,8 +63,10 @@ to { \_ -> TO }
 
 -- Types 
 $digit+ { \s -> NUM (read s) }
+true { \s -> TRUE_BOOL True }
+false { \s -> FALSE_BOOL False }
 $alpha($alpha|$digit)* { \s -> ID s }
-\".*\" { \s -> STRING s}
+\".*\" { \s -> STRING (read s)}
 
 {
 data Token
@@ -106,6 +108,8 @@ data Token
   | ASSIGN
   | ID String 
   | STRING String 
+  | TRUE_BOOL Bool
+  | FALSE_BOOL Bool
   deriving (Eq, Show)
 }
 
