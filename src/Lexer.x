@@ -31,6 +31,9 @@ then { \_ -> THEN }
 var { \_ -> VAR }
 while { \_ -> WHILE }
 to { \_ -> TO }
+print{ \_ -> PRINT}
+printi{ \_ -> PRINTI}
+scani{ \_ -> SCANI}
 
 -- punctuations signs
 "," { \_ -> COMMA }
@@ -110,6 +113,9 @@ data Token
   | STRING String 
   | TRUE_BOOL Bool
   | FALSE_BOOL Bool
+  | PRINT
+  | PRINTI
+  | SCANI
   deriving (Eq, Show)
 }
 
