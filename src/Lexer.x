@@ -17,105 +17,105 @@ tokens :-
 $white+ ; --ignore white chars
 
 -- reserved
-if { \_ -> IF }
-break { \_ -> BREAK }
-do { \_ -> DO }
-else { \_ -> ELSE }
-end { \_ -> END }
-for { \_ -> FOR }
-function { \_ -> FUNCTION }
-in { \_ -> IN }
-let { \_ -> LET }
-of { \_ -> OF }
-then { \_ -> THEN }
-var { \_ -> VAR }
-while { \_ -> WHILE }
-to { \_ -> TO }
-print{ \_ -> PRINT}
-printi{ \_ -> PRINTI}
-scani{ \_ -> SCANI}
+if { \_ -> Token_If }
+break { \_ -> Token_Break }
+do { \_ -> Token_Do }
+else { \_ -> Token_Else }
+end { \_ -> Token_End }
+for { \_ -> Token_For }
+function { \_ -> Token_Function }
+in { \_ -> Token_In }
+let { \_ -> Token_Let }
+of { \_ -> Token_Of }
+then { \_ -> Token_Then }
+var { \_ -> Token_Var }
+while { \_ -> Token_While }
+to { \_ -> Token_To }
+print{ \_ -> Token_Print }
+printi{ \_ -> Token_Printi }
+scani{ \_ -> Token_Scani }
 
 -- punctuations signs
-"," { \_ -> COMMA }
-":" { \_ -> COLLON }
-";" { \_ -> SEMI_COLLON }
-"(" { \_ -> LPARENTH}
-")" { \_ -> RPARENTH}
-"[" { \_ -> LSQUARE_PARENTH}
-"]" { \_ -> RSQUARE_PARENTH}
+"," { \_ -> Token_Comma }
+":" { \_ -> Token_Collon }
+";" { \_ -> Token_Semi_Collon }
+"(" { \_ -> Token_Lparenth }
+")" { \_ -> Token_Rparenth }
+"[" { \_ -> Token_Lsquare_Parenth }
+"]" { \_ -> Token_Rsquare_Parenth }
 
 -- operators
-"+" { \_ -> PLUS}
-"-" { \_ -> MINUS}
-"*" { \_ -> TIMES}
-"/" { \_ -> DIVIDED}
-"%" { \_ -> MOD}
-"=" { \_ -> EQUAL}
-"<>" { \_ -> NOT_EQUALS}
-"<" { \_ -> LESS_THEN}
-">" { \_ -> BIGGER_THEN}
-">=" { \_ -> BIGGER_OR_EQUAL_THEN}
-"<=" { \_ -> LESS_OR_EQUAL_THEN}
-"&" { \_ -> AND}
-"|" { \_ -> OR}
-":=" { \_ -> ASSIGN}
+"+" { \_ -> Token_Plus }
+"-" { \_ -> Token_Minus }
+"*" { \_ -> Token_Times }
+"/" { \_ -> Token_Divided }
+"%" { \_ -> Token_Mod }
+"=" { \_ -> Token_Equal }
+"<>" { \_ -> Token_Not_Equals }
+"<" { \_ -> Token_Less_Then }
+">" { \_ -> Token_Bigger_Then }
+">=" { \_ -> Token_Bigger_Or_Equal_Then }
+"<=" { \_ -> Token_Less_Or_Equal_Then }
+"&" { \_ -> Token_And }
+"|" { \_ -> Token_Or }
+":=" { \_ -> Token_Assign }
 
 -- comments
 "//".* ;
 "/*"(\s|\n|.)*"*/" ;
 
 -- Types 
-$digit+ { \s -> NUM (read s) }
-true { \s -> TRUE_BOOL True }
-false { \s -> FALSE_BOOL False }
-$alpha($alpha|$digit)* { \s -> ID s }
-\".*\" { \s -> STRING (read s)}
+$digit+ { \s -> Token_Int (read s) }
+true { \s -> Token_Boolean_True True }
+false { \s -> Token_Boolean_False False }
+$alpha($alpha|$digit)* { \s -> Token_Identifier s }
+\".*\" { \s -> Token_String (read s)}
 
 {
 data Token
-  = NUM Int 
-  | IF
-  | BREAK 
-  | DO 
-  | ELSE 
-  | END 
-  | FOR 
-  | FUNCTION 
-  | TO
-  | IN 
-  | LET 
-  | OF 
-  | THEN 
-  | VAR 
-  | WHILE 
-  | COMMA 
-  | COLLON
-  | SEMI_COLLON
-  | LPARENTH 
-  | RPARENTH
-  | LSQUARE_PARENTH 
-  | RSQUARE_PARENTH
-  | PLUS
-  | MINUS
-  | TIMES
-  | DIVIDED
-  | MOD
-  | EQUAL
-  | NOT_EQUALS
-  | LESS_THEN
-  | BIGGER_THEN
-  | BIGGER_OR_EQUAL_THEN 
-  | LESS_OR_EQUAL_THEN
-  | AND
-  | OR 
-  | ASSIGN
-  | ID String 
-  | STRING String 
-  | TRUE_BOOL Bool
-  | FALSE_BOOL Bool
-  | PRINT
-  | PRINTI
-  | SCANI
+  = Token_If
+  | Token_Break
+  | Token_Do
+  | Token_Else
+  | Token_End
+  | Token_For
+  | Token_Function
+  | Token_In
+  | Token_Let
+  | Token_Of
+  | Token_Then
+  | Token_Var
+  | Token_While
+  | Token_To
+  | Token_Print
+  | Token_Printi
+  | Token_Scani
+  | Token_Comma
+  | Token_Collon
+  | Token_Semi_Collon
+  | Token_Lparenth
+  | Token_Rparenth
+  | Token_Lsquare_Parenth
+  | Token_Rsquare_Parenth
+  | Token_Plus
+  | Token_Minus
+  | Token_Times
+  | Token_Divided
+  | Token_Mod
+  | Token_Equal
+  | Token_Not_Equals
+  | Token_Less_Then
+  | Token_Bigger_Then
+  | Token_Bigger_Or_Equal_Then
+  | Token_Less_Or_Equal_Then
+  | Token_And
+  | Token_Or
+  | Token_Assign
+  | Token_Int Int
+  | Token_Boolean_True Bool
+  | Token_Boolean_False Bool
+  | Token_Identifier String
+  | Token_String String
   deriving (Eq, Show)
 }
 

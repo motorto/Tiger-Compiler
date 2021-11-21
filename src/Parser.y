@@ -3,10 +3,10 @@
 -- TODO: 
 --  * Numeros Negativos
 --  * While ciclo
---  * ExpList 
+--  * ExprList 
 --  * ExpSeq -- não esquecer dos parentises if(2<4 , 3 < 5)
 --  * let var-decl-list in expr-seq end 
---    * Precisamos de  implementar o ExpList antes
+--    * Precisamos de  implementar o ExprList antes
 
 {
 module Parser where
@@ -19,54 +19,56 @@ import Lexer
 
 %token
 
--- reserved 
-if { IF }
-break { BREAK }
-do { DO }
-else { ELSE }
-end { END }
-for { FOR }
-function { FUNCTION }
-in { IN }
-let { LET }
-of { OF }
-then { THEN }
-var { VAR }
-while { WHILE }
-to { TO }
-print{ PRINT }
-printi{ PRINTI }
-scani{ SCANI }
+-- reserved
+if { Token_If }
+break { Token_Break }
+do { Token_Do }
+else { Token_Else }
+end { Token_End }
+for { Token_For }
+function { Token_Function }
+in { Token_In }
+let { Token_Let }
+of { Token_Of }
+then { Token_Then }
+var { Token_Var }
+while { Token_While }
+to { Token_To }
+print{ Token_Print }
+printi{ Token_Printi }
+scani{ Token_Scani }
 
 -- punctuations signs
-',' { COMMA }
-':' { COLLON }
-';' { SEMI_COLLON }
-'(' { LPARENTH }
-')' { RPARENTH }
-'[' { LSQUARE_PARENTH }
-']' { RSQUARE_PARENTH }
+',' { Token_Comma }
+':' { Token_Collon }
+';' { Token_Semi_Collon }
+'(' { Token_Lparenth }
+')' { Token_Rparenth }
+'[' { Token_Lsquare_Parenth }
+']' { Token_Rsquare_Parenth }
 
 -- operators
-'+' { PLUS }
-'-' { MINUS }
-'*' { TIMES }
-'/' { DIVIDED }
-'%' { MOD }
-'=' { EQUAL }
-'<>' { NOT_EQUALS }
-'<' { LESS_THEN }
-'>' { BIGGER_THEN }
-'>=' { BIGGER_OR_EQUAL_THEN }
-'<=' { LESS_OR_EQUAL_THEN }
-'&' { AND }
-'|' { OR }
-':=' { ASSIGN }
+'+' { Token_Plus }
+'-' { Token_Minus }
+'*' { Token_Times }
+'/' { Token_Divided }
+'%' { Token_Mod }
+'=' { Token_Equal }
+'<>' { Token_Not_Equals }
+'<' { Token_Less_Then }
+'>' { Token_Bigger_Then }
+'>=' { Token_Bigger_Or_Equal_Then }
+'<=' { Token_Less_Or_Equal_Then }
+'&' { Token_And }
+'|' { Token_Or }
+':=' { Token_Assign }
 
--- Types
-num { NUM $$ }
-id {ID $$}
-string {STRING $$}
+-- Types 
+int { Token_Int $$ }
+true     { Token_Boolean_True $$ }
+false    { Token_Boolean_False $$ }
+identifier { Token_Identifier $$ }
+string { Token_String $$ }
 
 -- Precedences 
 %nonassoc '<' '>' '<=' '>='
@@ -75,66 +77,73 @@ string {STRING $$}
 
 %% --Grammar
 
-Start : Exp { $1 }
+Expr : int { Int $1 }
+     | string { String $1 }
+     | Expr '+' Expr { Op Add $1 $3 }
+     | Expr '-' Expr { Op Subtraction $1 $3 }
+     | Expr '*' Expr { Op Multiplication $1 $3 } 
+     | Expr '/' Expr { Op Division $1 $3 } 
+     | Expr '%' Expr { Op Module $1 $3 } 
+     | Expr '=' Expr { Op Equals $1 $3 } 
+     | Expr '<>' Expr { Op NotEquals $1 $3 } 
+     | Expr '<' Expr { Op Less $1 $3 } 
+     | Expr '<=' Expr { Op LessEquals $1 $3 } 
+     | Expr '>' Expr { Op Bigger $1 $3 } 
+     | Expr '>=' Expr { Op BiggerEquals $1 $3 } 
+     | Expr '&' Expr { Op And $1 $3 } 
+     | Expr '|' Expr { Op Or $1 $3 } 
+     | '-'Expr {Negative $2} 
+     | identifier'('ExprList')' {FuncCall $1 $3}
+     | '('ExprSeq')' {ExpSeq $2 }
+     | LValue ':=' Expr {Assign $1 $3}
+     -- | if Expr then Expr {If $2 $4}
+     -- | if Expr then Expr else Expr {IfThen $2 $4 $6} 
+     -- | while Expr do Expr {While $2 $4 }
+     -- | break (Break $1)
+     -- | let var-decl-list in expr-seq end {LetIn $2 $4}
 
-Exp : num { Num $1 }
-    | string { Str $1 }
-    | Exp '+' Exp { Add $1 $3}
-    | Exp '-' Exp { Sub $1 $3}
-    | Exp '*' Exp { Mult $1 $3}
-    | Exp '/' Exp { Div $1 $3}
-    | Exp '%' Exp { Mod $1 $3}
-    | Exp '=' Exp { Equal $1 $3}
-    | Exp '<>' Exp { NotEquals $1 $3}
-    | Exp '<' Exp { LessThen $1 $3}
-    | Exp '>' Exp { BiggerThen $1 $3}
-    | Exp '>=' Exp { BiggerEqualThen $1 $3}
-    | Exp '<=' Exp { LessEqualThen $1 $3}
-    | Exp '&' Exp { And $1 $3}
-    | Exp '|' Exp { Or $1 $3}
-    | '('Exp')' { $2 }
-    | LValue { Var $1 }
-    | LValue ':=' Exp { Assign $1 $3 }
-    | if Exp then Exp { If $2 $4 }
-    | if Exp then Exp else Exp  { IfElse $2 $4 $6 }
-    | while Exp do Exp { While $2 $4 }
-    | print '(' Exp ')' { Print $3 }
-    | printi '(' Exp ')' { Printi $3 }
-    | scani '(' Exp ')' { Scani $3 }
+ExprSeq : {- empty -} { [] }
+        | Expr { [$1] }
+        | ExprSeq ';' Expr { $3 : $1 }
 
-LValue : id { $1 }
+LValue : identifier {Var $1}
+
+ExprList : {- empty -} { [] }
+         | Expr { [$1] }
+         | ExprList ',' Expr { $3 : $1 }
 
 {
 
-type LValue = String 
+-- type Lvalue = String
 
-data Start = Exp 
-           deriving Show
+data Expr 
+        = Int Int 
+        | String String
+        | Op BinaryOperator Expr Expr
+        | Negative Expr
+        | FuncCall String [Expr]
+        | ExpSeq [Expr]
+        | Assign LValue Expr
+        deriving Show
 
-data Exp = Num Int
-         | Str String
-         | Add Exp Exp
-         | Sub Exp Exp
-         | Mult Exp Exp
-         | Div Exp Exp
-         | Mod Exp Exp
-         | Equal Exp Exp
-         | NotEquals Exp Exp
-         | LessThen Exp Exp
-         | BiggerThen Exp Exp
-         | BiggerEqualThen Exp Exp
-         | LessEqualThen Exp Exp
-         | And Exp Exp
-         | Or Exp Exp
-         | Assign LValue Exp
-         | Var LValue
-         | If Exp Exp
-         | IfElse Exp Exp Exp
-         | While Exp Exp
-         | Print Exp 
-         | Printi Exp 
-         | Scani Exp 
-         deriving Show
+data LValue = Var String
+        deriving Show
+
+data BinaryOperator 
+        = Add 
+        | Subtraction
+        | Multiplication
+        | Division
+        | Module
+        | Equals
+        | NotEquals
+        | Less 
+        | LessEquals
+        | Bigger 
+        | BiggerEquals 
+        | And 
+        | Or 
+        deriving Show
 
 parseError :: [Token] -> a
 parseError toks = error ("parse error" ++ show toks)
