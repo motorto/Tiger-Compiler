@@ -1,12 +1,7 @@
 -- vim: filetype=haskell 
 
 -- TODO: 
---  * Numeros Negativos
---  * While ciclo
---  * ExprList 
---  * ExpSeq -- não esquecer dos parentises if(2<4 , 3 < 5)
 --  * let var-decl-list in expr-seq end 
---    * Precisamos de  implementar o ExprList antes
 
 {
 module Parser where
@@ -96,11 +91,13 @@ Expr : int { Int $1 }
      | identifier'('ExprList')' {FuncCall $1 $3}
      | '('ExprSeq')' {ExpSeq $2 }
      | LValue ':=' Expr {Assign $1 $3}
-     -- | if Expr then Expr {If $2 $4}
-     -- | if Expr then Expr else Expr {IfThen $2 $4 $6} 
-     -- | while Expr do Expr {While $2 $4 }
-     -- | break (Break $1)
-     -- | let var-decl-list in expr-seq end {LetIn $2 $4}
+     | if Expr then Expr {If $2 $4}
+     | if Expr then Expr else Expr {IfThen $2 $4 $6} 
+     | while Expr do Expr {While $2 $4 }
+     | break {Break }
+     | scani '(' ')' { ScanI }
+     | printi '(' Expr ')' { PrintI $3}
+     | print '(' Expr ')' { Print $3}
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
@@ -124,6 +121,13 @@ data Expr
         | FuncCall String [Expr]
         | ExpSeq [Expr]
         | Assign LValue Expr
+        | ScanI 
+        | PrintI Expr
+        | Print Expr
+        | If Expr Expr
+        | IfThen Expr Expr Expr
+        | While Expr Expr
+        | Break
         deriving Show
 
 data LValue = Var String
