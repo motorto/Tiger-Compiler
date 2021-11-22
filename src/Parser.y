@@ -98,6 +98,12 @@ Expr : int { Int $1 }
      | scani '(' ')' { ScanI }
      | printi '(' Expr ')' { PrintI $3}
      | print '(' Expr ')' { Print $3}
+     | let '(' Vardeclist ')' in '(' ExprSeq ')' end { Vardeclist $3 $7} 
+
+Vardeclist : {-empty -} { [] } --acho que nao pode ter empty
+	| Vardecl { $1 }
+	| Vardeclist Vardecl { $2 : $1 }
+
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
