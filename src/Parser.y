@@ -1,8 +1,5 @@
 -- vim: filetype=haskell 
 
--- TODO: 
--- Identifiers dentro das expressões
-
 {
 module Parser where
 import Lexer
@@ -98,8 +95,8 @@ TypeId : int {TypeInt}
        | string {TypeString}
 
 Expr : num { Number $1 }
-     | LValue ':=' Expr {Assign $1 $3}
      | stringContent { BuildString $1 }
+     | LValue { VarName $1}
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
@@ -119,6 +116,7 @@ Expr : num { Number $1 }
      | if Expr then Expr {If $2 $4}
      | if Expr then Expr else Expr {IfThen $2 $4 $6} 
      | while Expr do Expr {While $2 $4 }
+     | LValue ':=' Expr {Assign $1 $3}
      | break {Break }
      | scani '(' ')' { ScanI }
      | printi '(' Expr ')' { PrintI $3}
@@ -163,6 +161,7 @@ data TypeId = TypeInt
 data Expr 
         = Number Int 
         | BuildString String
+        | VarName LValue
         | Op BinaryOperator Expr Expr
         | Negative Expr
         | FuncCall String [Expr]
