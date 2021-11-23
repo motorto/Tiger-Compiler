@@ -8,7 +8,7 @@
 
 -- Regex Expressions
 -- $white = [\ \t\n\r\"\\]
-$white = [\ \t\n\r]
+$white = [\ \t\n\r\v\r]
 $digit = [0-9]
 $alpha = [_a-zA-Z]
 
