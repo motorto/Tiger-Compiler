@@ -8,7 +8,7 @@
 
 -- Regex Expressions
 -- $white = [\ \t\n\r\"\\]
-$white = [\ \t\n\r\s]
+$white = [\ \t\n\r]
 $digit = [0-9]
 $alpha = [_a-zA-Z]
 
@@ -34,6 +34,8 @@ to { \_ -> Token_To }
 print{ \_ -> Token_Print }
 printi{ \_ -> Token_Printi }
 scani{ \_ -> Token_Scani }
+int { \_ -> Token_Type_Integer}
+string { \_ -> Token_Type_String}
 
 -- punctuations signs
 "," { \_ -> Token_Comma }
@@ -62,10 +64,10 @@ scani{ \_ -> Token_Scani }
 
 -- comments
 "//".* ;
-"/*"(\s|\n|.)*"*/" ;
+"/*"(\n|.)*"*/" ;
 
 -- Types 
-$digit+ { \s -> Token_Int (read s) }
+$digit+ { \s -> Token_Number (read s) }
 true { \s -> Token_Boolean_True True }
 false { \s -> Token_Boolean_False False }
 $alpha($alpha|$digit)* { \s -> Token_Identifier s }
@@ -111,11 +113,13 @@ data Token
   | Token_And
   | Token_Or
   | Token_Assign
-  | Token_Int Int
+  | Token_Number Int
   | Token_Boolean_True Bool
   | Token_Boolean_False Bool
   | Token_Identifier String
   | Token_String String
+  | Token_Type_String 
+  | Token_Type_Integer
   deriving (Eq, Show)
 }
 

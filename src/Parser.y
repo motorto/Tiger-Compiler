@@ -1,7 +1,7 @@
 -- vim: filetype=haskell 
 
 -- TODO: 
---  * let var-decl-list in expr-seq end 
+-- Identifiers dentro das expressões
 
 {
 module Parser where
@@ -59,21 +59,47 @@ scani{ Token_Scani }
 ':=' { Token_Assign }
 
 -- Types 
-int { Token_Int $$ }
+int { Token_Type_Integer }
+string { Token_Type_String }
+
+num { Token_Number $$ }
+stringContent { Token_String $$ }
+
 true     { Token_Boolean_True $$ }
 false    { Token_Boolean_False $$ }
 identifier { Token_Identifier $$ }
-string { Token_String $$ }
 
 -- Precedences 
-%nonassoc '<' '>' '<=' '>='
+%nonassoc ':='
+%left '|' '&' 
+%nonassoc '<' '>' '<=' '>=' '<>' '='
 %left '+' '-'
 %left '*' '/' '%'
 
 %% --Grammar
 
-Expr : int { Int $1 }
-     | string { String $1 }
+Program : let DecList in ExprSeq {Begin $2 $4} 
+
+DecList : Decl { [$1] }
+        | DecList Decl  {$2 : $1}
+
+Decl : VarDecl { VarDecla $1}
+     | FuncDecl { FunDecla $1}
+
+FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
+         | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
+
+TypeFields : TypeField {[$1]}
+           | TypeFields ',' TypeField {$3 : $1}
+
+TypeField : identifier ':' TypeId {Declare $1 $3}
+
+TypeId : int {TypeInt}
+       | string {TypeString}
+
+Expr : num { Number $1 }
+     | LValue ':=' Expr {Assign $1 $3}
+     | stringContent { BuildString $1 }
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
@@ -88,9 +114,8 @@ Expr : int { Int $1 }
      | Expr '&' Expr { Op And $1 $3 } 
      | Expr '|' Expr { Op Or $1 $3 } 
      | '-'Expr {Negative $2} 
-     | identifier'('ExprList')' {FuncCall $1 $3}
+     | identifier '(' ExprList ')' {FuncCall $1 $3}
      | '('ExprSeq')' {ExpSeq $2 }
-     | LValue ':=' Expr {Assign $1 $3}
      | if Expr then Expr {If $2 $4}
      | if Expr then Expr else Expr {IfThen $2 $4 $6} 
      | while Expr do Expr {While $2 $4 }
@@ -98,6 +123,12 @@ Expr : int { Int $1 }
      | scani '(' ')' { ScanI }
      | printi '(' Expr ')' { PrintI $3}
      | print '(' Expr ')' { Print $3}
+     | let VarDecList in ExprSeq end {LetIn $2 $4}
+
+VarDecList : VarDecl { [$1] }
+           | VarDecList VarDecl { $2 : $1 }
+
+VarDecl : var identifier ':=' Expr { Decl $2 $4 }
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
@@ -111,11 +142,27 @@ ExprList : {- empty -} { [] }
 
 {
 
--- type Lvalue = String
+data Program = Begin [Decl] [Expr]
+            deriving Show
+
+data Decl = VarDecla VarDecl
+          | FunDecla FuncDecl
+            deriving Show
+
+data FuncDecl = FunctionDeclare String [TypeField] Expr
+              | FunctionDeclareTyped String [TypeField] TypeId Expr
+            deriving Show
+
+data TypeField = Declare String TypeId
+            deriving Show
+
+data TypeId = TypeInt
+            | TypeString
+            deriving Show
 
 data Expr 
-        = Int Int 
-        | String String
+        = Number Int 
+        | BuildString String
         | Op BinaryOperator Expr Expr
         | Negative Expr
         | FuncCall String [Expr]
@@ -128,6 +175,10 @@ data Expr
         | IfThen Expr Expr Expr
         | While Expr Expr
         | Break
+        | LetIn [VarDecl] [Expr]
+        deriving Show
+
+data VarDecl = Decl String Expr
         deriving Show
 
 data LValue = Var String
