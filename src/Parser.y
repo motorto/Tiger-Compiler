@@ -1,7 +1,7 @@
 -- vim: filetype=haskell 
 
 -- TODO: 
---  * let var-decl-list in expr-seq end 
+--  Não Funciona o s como indetificador por alguma razão 
 
 {
 module Parser where
@@ -59,11 +59,15 @@ scani{ Token_Scani }
 ':=' { Token_Assign }
 
 -- Types 
-int { Token_Int $$ }
+int { Token_Type_Integer }
+string { Token_Type_String }
+
+num { Token_Number $$ }
+stringContent { Token_String $$ }
+
 true     { Token_Boolean_True $$ }
 false    { Token_Boolean_False $$ }
 identifier { Token_Identifier $$ }
-string { Token_String $$ }
 
 -- Precedences 
 %nonassoc '<' '>' '<=' '>='
@@ -72,8 +76,8 @@ string { Token_String $$ }
 
 %% --Grammar
 
-Expr : int { Int $1 }
-     | string { String $1 }
+Expr : num { Int $1 }
+     | stringContent { String $1 }
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
@@ -88,7 +92,7 @@ Expr : int { Int $1 }
      | Expr '&' Expr { Op And $1 $3 } 
      | Expr '|' Expr { Op Or $1 $3 } 
      | '-'Expr {Negative $2} 
-     | identifier'('ExprList')' {FuncCall $1 $3}
+     | identifier '(' ExprList ')' {FuncCall $1 $3}
      | '('ExprSeq')' {ExpSeq $2 }
      | LValue ':=' Expr {Assign $1 $3}
      | if Expr then Expr {If $2 $4}
@@ -98,12 +102,12 @@ Expr : int { Int $1 }
      | scani '(' ')' { ScanI }
      | printi '(' Expr ')' { PrintI $3}
      | print '(' Expr ')' { Print $3}
-     | let '(' Vardeclist ')' in '(' ExprSeq ')' end { Vardeclist $3 $7} 
+     | let VarDecList in ExprSeq end {LetIn $2 $4}
 
-Vardeclist : {-empty -} { [] } --acho que nao pode ter empty
-	| Vardecl { $1 }
-	| Vardeclist Vardecl { $2 : $1 }
+VarDecList : VarDecl { [$1] }
+           | VarDecList VarDecl { $2 : $1 }
 
+VarDecl : var identifier ':=' Expr { Decl $2 $4 }
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
@@ -134,6 +138,10 @@ data Expr
         | IfThen Expr Expr Expr
         | While Expr Expr
         | Break
+        | LetIn [VarDecl] [Expr]
+        deriving Show
+
+data VarDecl = Decl String Expr
         deriving Show
 
 data LValue = Var String
