@@ -8,7 +8,7 @@
 
 -- Regex Expressions
 -- $white = [\ \t\n\r\"\\]
-$white = [\ \t\n\r\s]
+$white = [\ \t\n\r]
 $digit = [0-9]
 $alpha = [_a-zA-Z]
 
@@ -64,7 +64,7 @@ string { \_ -> Token_Type_String}
 
 -- comments
 "//".* ;
-"/*"(\s|\n|.)*"*/" ;
+"/*"(\n|.)*"*/" ;
 
 -- Types 
 $digit+ { \s -> Token_Number (read s) }

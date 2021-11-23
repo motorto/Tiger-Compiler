@@ -1,8 +1,5 @@
 -- vim: filetype=haskell 
 
--- TODO: 
---  Não Funciona o s como indetificador por alguma razão 
-
 {
 module Parser where
 import Lexer
@@ -70,14 +67,36 @@ false    { Token_Boolean_False $$ }
 identifier { Token_Identifier $$ }
 
 -- Precedences 
-%nonassoc '<' '>' '<=' '>='
+%nonassoc ':='
+%left '|' '&' 
+%nonassoc '<' '>' '<=' '>=' '<>' '='
 %left '+' '-'
 %left '*' '/' '%'
 
 %% --Grammar
 
-Expr : num { Int $1 }
-     | stringContent { String $1 }
+Program : let DecList in ExprSeq {Begin $2 $4} 
+
+DecList : Decl { [$1] }
+        | DecList Decl  {$2 : $1}
+
+Decl : VarDecl { VarDecla $1}
+     | FuncDecl { FunDecla $1}
+
+FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
+         | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
+
+TypeFields : TypeField {[$1]}
+           | TypeFields ',' TypeField {$3 : $1}
+
+TypeField : identifier ':' TypeId {Declare $1 $3}
+
+TypeId : int {TypeInt}
+       | string {TypeString}
+
+Expr : num { Number $1 }
+     | stringContent { BuildString $1 }
+     | LValue { VarName $1}
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
@@ -94,10 +113,10 @@ Expr : num { Int $1 }
      | '-'Expr {Negative $2} 
      | identifier '(' ExprList ')' {FuncCall $1 $3}
      | '('ExprSeq')' {ExpSeq $2 }
-     | LValue ':=' Expr {Assign $1 $3}
      | if Expr then Expr {If $2 $4}
      | if Expr then Expr else Expr {IfThen $2 $4 $6} 
      | while Expr do Expr {While $2 $4 }
+     | LValue ':=' Expr {Assign $1 $3}
      | break {Break }
      | scani '(' ')' { ScanI }
      | printi '(' Expr ')' { PrintI $3}
@@ -121,11 +140,28 @@ ExprList : {- empty -} { [] }
 
 {
 
--- type Lvalue = String
+data Program = Begin [Decl] [Expr]
+            deriving Show
+
+data Decl = VarDecla VarDecl
+          | FunDecla FuncDecl
+            deriving Show
+
+data FuncDecl = FunctionDeclare String [TypeField] Expr
+              | FunctionDeclareTyped String [TypeField] TypeId Expr
+            deriving Show
+
+data TypeField = Declare String TypeId
+            deriving Show
+
+data TypeId = TypeInt
+            | TypeString
+            deriving Show
 
 data Expr 
-        = Int Int 
-        | String String
+        = Number Int 
+        | BuildString String
+        | VarName LValue
         | Op BinaryOperator Expr Expr
         | Negative Expr
         | FuncCall String [Expr]
