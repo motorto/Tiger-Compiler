@@ -1,0 +1,9 @@
+let
+	var x := 3
+	var y := 4
+	var z := 0
+in
+if x > y then
+	z := x
+else
+	z := y
