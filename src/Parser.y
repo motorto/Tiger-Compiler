@@ -78,7 +78,7 @@ identifier { Token_Identifier $$ }
 Program : let DecList in ExprSeq {Begin $2 $4} 
 
 DecList : Decl { [$1] }
-        | DecList Decl  {$2 : $1}
+        | DecList Decl  {$1 ++ [$2] }
 
 Decl : VarDecl { VarDecla $1}
      | FuncDecl { FunDecla $1}
@@ -87,7 +87,7 @@ FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 
          | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
 
 TypeFields : TypeField {[$1]}
-           | TypeFields ',' TypeField {$3 : $1}
+           | TypeFields ',' TypeField {$1 ++ [$3]}
 
 TypeField : identifier ':' TypeId {Declare $1 $3}
 
@@ -96,7 +96,7 @@ TypeId : int {TypeInt}
 
 Expr : num { Number $1 }
      | stringContent { BuildString $1 }
-     | LValue { VarName $1}
+     | LValue { Var $1}
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
@@ -124,19 +124,19 @@ Expr : num { Number $1 }
      | let VarDecList in ExprSeq end {LetIn $2 $4}
 
 VarDecList : VarDecl { [$1] }
-           | VarDecList VarDecl { $2 : $1 }
+           | VarDecList VarDecl { $1 ++ [$2] }
 
 VarDecl : var identifier ':=' Expr { Decl $2 $4 }
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
-        | ExprSeq ';' Expr { $3 : $1 }
+        | ExprSeq ';' Expr { $1 ++ [$3] }
 
-LValue : identifier {Var $1}
+LValue : identifier {VarName $1}
 
 ExprList : {- empty -} { [] }
          | Expr { [$1] }
-         | ExprList ',' Expr { $3 : $1 }
+         | ExprList ',' Expr { $1 ++ [$3] }
 
 {
 
@@ -161,7 +161,7 @@ data TypeId = TypeInt
 data Expr 
         = Number Int 
         | BuildString String
-        | VarName LValue
+        | Var LValue
         | Op BinaryOperator Expr Expr
         | Negative Expr
         | FuncCall String [Expr]
@@ -180,7 +180,7 @@ data Expr
 data VarDecl = Decl String Expr
         deriving Show
 
-data LValue = Var String
+data LValue = VarName String
         deriving Show
 
 data BinaryOperator 
