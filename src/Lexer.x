@@ -31,9 +31,6 @@ then { \_ -> Token_Then }
 var { \_ -> Token_Var }
 while { \_ -> Token_While }
 to { \_ -> Token_To }
-print{ \_ -> Token_Print }
-printi{ \_ -> Token_Printi }
-scani{ \_ -> Token_Scani }
 int { \_ -> Token_Type_Integer}
 string { \_ -> Token_Type_String}
 
@@ -68,8 +65,6 @@ string { \_ -> Token_Type_String}
 
 -- Types 
 $digit+ { \s -> Token_Number (read s) }
-true { \s -> Token_Boolean_True True }
-false { \s -> Token_Boolean_False False }
 $alpha($alpha|$digit)* { \s -> Token_Identifier s }
 \".*\" { \s -> Token_String (read s)}
 
@@ -89,9 +84,6 @@ data Token
   | Token_Var
   | Token_While
   | Token_To
-  | Token_Print
-  | Token_Printi
-  | Token_Scani
   | Token_Comma
   | Token_Collon
   | Token_Semi_Collon
@@ -114,8 +106,6 @@ data Token
   | Token_Or
   | Token_Assign
   | Token_Number Int
-  | Token_Boolean_True Bool
-  | Token_Boolean_False Bool
   | Token_Identifier String
   | Token_String String
   | Token_Type_String 

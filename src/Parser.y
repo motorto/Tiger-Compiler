@@ -26,9 +26,6 @@ then { Token_Then }
 var { Token_Var }
 while { Token_While }
 to { Token_To }
-print{ Token_Print }
-printi{ Token_Printi }
-scani{ Token_Scani }
 
 -- punctuations signs
 ',' { Token_Comma }
@@ -62,8 +59,6 @@ string { Token_Type_String }
 num { Token_Number $$ }
 stringContent { Token_String $$ }
 
-true     { Token_Boolean_True $$ }
-false    { Token_Boolean_False $$ }
 identifier { Token_Identifier $$ }
 
 -- Precedences 
@@ -118,9 +113,6 @@ Expr : num { Number $1 }
      | while Expr do Expr {While $2 $4 }
      | LValue ':=' Expr {Assign $1 $3}
      | break {Break }
-     | scani '(' ')' { ScanI }
-     | printi '(' Expr ')' { PrintI $3}
-     | print '(' Expr ')' { Print $3}
      | let VarDecList in ExprSeq end {LetIn $2 $4}
 
 VarDecList : VarDecl { [$1] }
