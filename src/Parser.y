@@ -75,8 +75,8 @@ Program : let DecList in ExprSeq {Begin $2 $4}
 DecList : Decl { [$1] }
         | DecList Decl  {$1 ++ [$2] }
 
-Decl : VarDecl { VarDecla $1}
-     | FuncDecl { FunDecla $1}
+Decl : VarDecl { VarDeclaration $1}
+     | FuncDecl { FunDeclaration $1}
 
 FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
          | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
@@ -135,8 +135,8 @@ ExprList : {- empty -} { [] }
 data Program = Begin [Decl] [Expr]
             deriving Show
 
-data Decl = VarDecla VarDecl
-          | FunDecla FuncDecl
+data Decl = VarDeclaration VarDecl
+          | FunDeclaration FuncDecl
             deriving Show
 
 data FuncDecl = FunctionDeclare String [TypeField] Expr
