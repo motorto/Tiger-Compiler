@@ -132,6 +132,8 @@ ExprList : {- empty -} { [] }
 
 {
 
+type Identifier = String
+
 data Program = Begin [Decl] [Expr]
             deriving Show
 
@@ -139,16 +141,16 @@ data Decl = VarDeclaration VarDecl
           | FunDeclaration FuncDecl
             deriving Show
 
-data FuncDecl = FunctionDeclare String [TypeField] Expr
-              | FunctionDeclareTyped String [TypeField] TypeId Expr
+data FuncDecl = FunctionDeclare Identifier [TypeField] Expr
+              | FunctionDeclareTyped Identifier [TypeField] TypeId Expr
             deriving Show
 
-data TypeField = Declare String TypeId
+data TypeField = Declare Identifier TypeId
             deriving Show
 
 data TypeId = TypeInt
             | TypeString
-            deriving Show
+            deriving (Show, Eq)
 
 data Expr 
         = Number Int 
@@ -156,7 +158,7 @@ data Expr
         | Var LValue
         | Op BinaryOperator Expr Expr
         | Negative Expr
-        | FuncCall String [Expr]
+        | FuncCall Identifier [Expr]
         | ExpSeq [Expr]
         | Assign LValue Expr
         | ScanI 
@@ -169,10 +171,10 @@ data Expr
         | LetIn [VarDecl] [Expr]
         deriving Show
 
-data VarDecl = Decl String Expr
+data VarDecl = Decl Identifier Expr
         deriving Show
 
-data LValue = VarName String
+data LValue = VarName Identifier
         deriving Show
 
 data BinaryOperator 
