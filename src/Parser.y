@@ -106,14 +106,14 @@ Expr : num { Number $1 }
      | Expr '&' Expr { Cond And $1 $3 } 
      | Expr '|' Expr { Cond Or $1 $3 } 
      | '-'Expr {Negative $2} 
-     | identifier '(' ExprList ')' {FuncCall $1 $3}
-     | '('ExprSeq')' {ExpSeq $2 }
-     | if Expr then Expr {If $2 $4}
-     | if Expr then Expr else Expr {IfThen $2 $4 $6} 
+     | identifier '(' ExprList ')' { FuncCall $1 $3}
+     | '('ExprSeq')' { ExpSeq $2 }
+     | if Expr then Expr {IfThen $2 $4}
+     | if Expr then Expr else Expr {IfThenElse $2 $4 $6}
      | while Expr do Expr {While $2 $4 }
      | LValue ':=' Expr {Assign $1 $3}
-     | break {Break }
-     | let VarDecList in ExprSeq end {LetIn $2 $4}
+     | break { Break }
+     | let VarDecList in ExprSeq end { LetIn $2 $4}
 
 VarDecList : VarDecl { [$1] }
            | VarDecList VarDecl { $1 ++ [$2] }
@@ -165,8 +165,8 @@ data Expr
         | ScanI 
         | PrintI Expr
         | Print Expr
-        | If Expr Expr
-        | IfThen Expr Expr Expr
+        | IfThen Expr Expr
+        | IfThenElse Expr Expr Expr
         | While Expr Expr
         | Break
         | LetIn [VarDecl] [Expr]
