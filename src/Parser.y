@@ -97,14 +97,14 @@ Expr : num { Number $1 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
      | Expr '/' Expr { Op Division $1 $3 } 
      | Expr '%' Expr { Op Module $1 $3 } 
-     | Expr '=' Expr { Op Equals $1 $3 } 
-     | Expr '<>' Expr { Op NotEquals $1 $3 } 
-     | Expr '<' Expr { Op Less $1 $3 } 
-     | Expr '<=' Expr { Op LessEquals $1 $3 } 
-     | Expr '>' Expr { Op Bigger $1 $3 } 
-     | Expr '>=' Expr { Op BiggerEquals $1 $3 } 
-     | Expr '&' Expr { Op And $1 $3 } 
-     | Expr '|' Expr { Op Or $1 $3 } 
+     | Expr '=' Expr { Cond Equals $1 $3 } 
+     | Expr '<>' Expr { Cond NotEquals $1 $3 } 
+     | Expr '<' Expr { Cond Less $1 $3 } 
+     | Expr '<=' Expr { Cond LessEquals $1 $3 } 
+     | Expr '>' Expr { Cond Bigger $1 $3 } 
+     | Expr '>=' Expr { Cond BiggerEquals $1 $3 } 
+     | Expr '&' Expr { Cond And $1 $3 } 
+     | Expr '|' Expr { Cond Or $1 $3 } 
      | '-'Expr {Negative $2} 
      | identifier '(' ExprList ')' {FuncCall $1 $3}
      | '('ExprSeq')' {ExpSeq $2 }
@@ -157,6 +157,7 @@ data Expr
         | BuildString String
         | Var LValue
         | Op BinaryOperator Expr Expr
+        | Cond RealOp Expr Expr
         | Negative Expr
         | FuncCall Identifier [Expr]
         | ExpSeq [Expr]
@@ -183,7 +184,9 @@ data BinaryOperator
         | Multiplication
         | Division
         | Module
-        | Equals
+        deriving Show
+
+data RealOp = Equals
         | NotEquals
         | Less 
         | LessEquals
