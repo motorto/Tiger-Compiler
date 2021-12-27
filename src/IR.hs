@@ -20,4 +20,3 @@ data Instr = MOVE Temp Temp
            | RETURN Temp
            deriving (Eq, Show)
 
-
