@@ -11,6 +11,7 @@ type Label = String
 
 data Instr = MOVE Temp Temp 
            | MOVEI Temp Int
+           | NEGATIVE Temp Temp
            | OP BinOp Temp Temp Temp
            | OPI BinOp Temp Temp Int
            | LABEL Label
