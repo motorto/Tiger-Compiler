@@ -92,28 +92,28 @@ TypeId : int {TypeInt}
        | string {TypeString}
 
 Expr : num { Number $1 }
+     | identifier { Var $1}
      | stringContent { BuildString $1 }
-     | LValue { Var $1}
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
      | Expr '/' Expr { Op Division $1 $3 } 
      | Expr '%' Expr { Op Module $1 $3 } 
-     | Expr '=' Expr { Cond Equals $1 $3 } 
-     | Expr '<>' Expr { Cond NotEquals $1 $3 } 
-     | Expr '<' Expr { Cond Less $1 $3 } 
-     | Expr '<=' Expr { Cond LessEquals $1 $3 } 
-     | Expr '>' Expr { Cond Bigger $1 $3 } 
-     | Expr '>=' Expr { Cond BiggerEquals $1 $3 } 
-     | Expr '&' Expr { Cond And $1 $3 } 
-     | Expr '|' Expr { Cond Or $1 $3 } 
+     | Expr '=' Expr { Op Equals $1 $3 } 
+     | Expr '<>' Expr { Op NotEquals $1 $3 } 
+     | Expr '<' Expr { Op Less $1 $3 } 
+     | Expr '<=' Expr { Op LessEquals $1 $3 } 
+     | Expr '>' Expr { Op Bigger $1 $3 } 
+     | Expr '>=' Expr { Op BiggerEquals $1 $3 } 
+     | Expr '&' Expr { Op And $1 $3 } 
+     | Expr '|' Expr { Op Or $1 $3 } 
      | '-'Expr {Negative $2} 
      | identifier '(' ExprList ')' { FuncCall $1 $3}
      | '('ExprSeq')' { ExpSeq $2 }
      | if Expr then Expr {IfThen $2 $4}
      | if Expr then Expr else Expr {IfThenElse $2 $4 $6}
      | while Expr do Expr {While $2 $4 }
-     | LValue ':=' Expr {Assign $1 $3}
+     | identifier ':=' Expr {Assign $1 $3}
      | break { Break }
      | let VarDecList in ExprSeq end { LetIn $2 $4}
 
@@ -123,8 +123,6 @@ VarDecList : VarDecl { [$1] }
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
         | ExprSeq ';' Expr { $1 ++ [$3] }
-
-LValue : identifier {VarName $1}
 
 ExprList : {- empty -} { [] }
          | Expr { [$1] }
@@ -157,14 +155,13 @@ data TypeId = TypeInt
 
 data Expr 
         = Number Int 
+        | Var Identifier
         | BuildString String
-        | Var LValue
         | Op BinOp Expr Expr
-        | Cond RealOp Expr Expr
         | Negative Expr
         | FuncCall Identifier [Expr]
         | ExpSeq [Expr]
-        | Assign LValue Expr
+        | Assign Identifier Expr
         | ScanI 
         | PrintI Expr
         | Print Expr
@@ -175,18 +172,13 @@ data Expr
         | LetIn [VarDecl] [Expr]
         deriving Show
 
-data LValue = VarName Identifier
-        deriving Show
-
 data BinOp 
         = Add 
         | Subtraction
         | Multiplication
         | Division
         | Module
-        deriving (Eq, Show)
-
-data RealOp = Equals
+        | Equals
         | NotEquals
         | Less 
         | LessEquals
