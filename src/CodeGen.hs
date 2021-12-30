@@ -44,7 +44,7 @@ transExpression expression tabl dest = case expression of
                            -> do t1 <- newTemp 
                                  code1 <- transExpression exp1 tabl t1 
                                  popTemp 1
-                                 return (code1 ++ [OPI Subtraction t1 0 t1]) 
+                                 return (code1 ++ [OP Subtraction t1 "0" t1]) 
                 (FuncCall id args)
                            -> do (code, temps) <- transArguments args tabl
                                  popTemp (length args)
@@ -87,15 +87,11 @@ transStatements statement tabl = case statement of
                                 return ([LABEL l1] ++ code1 ++ 
                                         [LABEL l2] ++ code2 ++ 
                                         [JUMP l1,LABEL l3])
-                (expr1) 
-                        -> do t1 <- newTemp 
-                              code1 <- transExp tabl exp1 t1
-                              return (code1 ++  [COND t1 Equals 1 ltrue lfalse] 
 
 transCondition :: Expr -> Table -> Label -> Label -> State Count [Instr]
 transCondition (condition) tabl ltrue lfalse = case condition of 
-               (Number 0) -> do  return [JUMP lfalse ]
-               (Number 1) -> do  return [JUMP ltrue ]
+               (Number 0) -> do return [JUMP lfalse ]
+               (Number 1) -> do return [JUMP ltrue ]
                (Op And exp1 exp2) 
                           -> do l1 <- newLabel
                                 code1 <- transCondition exp1 tabl l1 lfalse
@@ -113,6 +109,9 @@ transCondition (condition) tabl ltrue lfalse = case condition of
                                 code2 <- transExpression exp2 tabl t2
                                 popTemp 2
                                 return (code1  ++ code2 ++ [COND t1 op t2 ltrue lfalse])
+               (exp1) -> do t1 <- newTemp 
+                            code1 <- transExpression exp1 tabl  t1
+                            return (code1 ++  [COND t1 NotEquals "0" ltrue lfalse])
  
 transArguments :: [Expr] -> Table -> State Count ([Instr],[Temp])
 transArguments [] tabl = return ([],[])
