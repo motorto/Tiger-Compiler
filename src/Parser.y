@@ -75,13 +75,9 @@ Program : let DecList in ExprSeq {Begin $2 $4}
 DecList : Decl { [$1] }
         | DecList Decl  {$1 ++ [$2] }
 
-Decl : VarDecl { VarDeclaration $1}
-     | FuncDecl { FunDeclaration $1}
-
-VarDecl : var identifier ':=' Expr { Decl $2 $4 }
-
-FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
-         | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
+Decl : var identifier ':=' Expr { VarDeclaration $2 $4 }
+     | function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
+     | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9} 
 
 TypeFields : TypeField {[$1]}
            | TypeFields ',' TypeField {$1 ++ [$3]}
@@ -117,8 +113,8 @@ Expr : num { Number $1 }
      | break { Break }
      | let VarDecList in ExprSeq end { LetIn $2 $4}
 
-VarDecList : VarDecl { [$1] }
-           | VarDecList VarDecl { $1 ++ [$2] }
+VarDecList : Decl { [$1] }
+           | VarDecList Decl { $1 ++ [$2] }
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
@@ -135,15 +131,9 @@ type Identifier = String
 data Program = Begin [Decl] [Expr]
             deriving Show
 
-data Decl = VarDeclaration VarDecl
-          | FunDeclaration FuncDecl
-            deriving Show
-
-data VarDecl = Decl Identifier Expr
-        deriving Show
-
-data FuncDecl = FunctionDeclare Identifier [TypeField] Expr
-              | FunctionDeclareTyped Identifier [TypeField] TypeId Expr
+data Decl = VarDeclaration Identifier Expr
+          | FunctionDeclare Identifier [TypeField] Expr 
+          | FunctionDeclareTyped Identifier [TypeField] TypeId Expr
             deriving Show
 
 data TypeField = Declare Identifier TypeId
@@ -169,7 +159,7 @@ data Expr
         | IfThenElse Expr Expr Expr
         | While Expr Expr
         | Break
-        | LetIn [VarDecl] [Expr]
+        | LetIn [Decl] [Expr]
         deriving Show
 
 data BinOp 
