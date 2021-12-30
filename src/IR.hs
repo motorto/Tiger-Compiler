@@ -13,10 +13,10 @@ data Instr = MOVE Temp Temp
            | MOVEI Temp Int
            | NEGATIVE Temp Temp
            | OP BinOp Temp Temp Temp
-           | OPI BinOp Temp Temp Int
+           | OPI BinOp Temp Int Temp
            | LABEL Label
            | JUMP Label
-           | COND Temp RealOp Temp Label Label
+           | COND Temp BinOp Temp Label Label
            | CALL Temp Label [Temp]
            | RETURN Temp
            deriving (Eq, Show)
