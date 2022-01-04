@@ -1,13 +1,5 @@
 module CodeGen where
 
-{- acho que só falta isto: 
-     STM :
-     | let VarDecList in ExprSeq end { LetIn $2 $4}
-
-     Inicio do Programa:
-     | let DecList in ExprSeq {Begin $2 $4} 
--}
-
 import           Parser
 import           IR
 import           Data.Map (Map)
