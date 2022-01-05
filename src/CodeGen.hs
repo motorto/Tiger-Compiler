@@ -52,7 +52,7 @@ transArguments (exp:tail) tabl = do t1 <- newTemp
                                     code1 <- transExpression exp tabl t1 
                                     popTemp 1
                                     (code2,tmps) <- transArguments tail tabl
-                                     return (code1 ++ code2,[t1] ++ tmps)
+                                    return (code1 ++ code2,[t1] ++ tmps)
 
 transStatements :: Expr -> Table -> State Count [Instr] 
 transStatements statement tabl = case statement of 
@@ -79,10 +79,10 @@ transStatements statement tabl = case statement of
                                 return (code1 ++ [LABEL l1] ++ code2 ++ 
                                         [JUMP l3,LABEL l2] ++ code3 ++ 
                                         [LABEL l3])
-               (LetIn vars exp1)
-                          -> do (newTable,code1) <- transDeclaration vars tabl
+                (LetIn vars exp1)
+                          -> do (newTable,code1) <- transDeclarations (VarDeclaration vars) tabl
                                 t1 <- newTemp 
-                                code2 <- transExpression exp1 newTable t1 
+                                code2 <- transArguments exp1 newTable t1 
                                 return (code1 ++ code2)
                 (While cond exp1) 
                           -> do l1 <- newLabel
@@ -123,21 +123,21 @@ transType :: TypeField -> Table -> State Count ([Temp],(Table))
 transType (typeField) tabl = case typeField of 
           (Declare id typeId) 
                       -> do t1 <- newTemp 
-                            newTable = Map.Insert id t1 tabl
-                            return (t1,tabl)
+                            let newTable = Map.insert id t1 tabl
+                            return ([t1],tabl)
 
 transTypes :: [TypeField] -> Table -> State Count ([Temp],Table)
 transTypes [] tabl = return ([],tabl)
 transTypes (t:ts) tabl = do (t1,tabl1) <- transType t tabl
                             (t2,tabl2) <- transTypes ts tabl1
-                            return (t1++t2,table2)
+                            return (t1++t2,tabl2)
 
 transDeclaration :: Decl -> Table -> State Count ([Instr],Table)
 transDeclaration (declaration) tabl = case declaration of 
                  (VarDeclaration (Decl id exp1)) 
                             -> do t1 <- newTemp
-                                  newTable <- Map.insert id exp1 tabl
-                                  code <- transExpression exp1 newTable t1
+                                  code <- transExpression exp1 tabl t1
+                                  let newTable <- Map.insert id t1 tabl
                                   return (code,newTable)
                  (FunDeclaration (FunctionDeclare id args exp1))
                             -> do table1 <- Map.insert id id tabl 
@@ -158,9 +158,9 @@ transDeclarations (dec:decs) tabl = do (code1,tabl1) <- transDeclaration tabl de
                                        (code2,tabl2) <- transDeclarations tabl1 decs
                                        return (code1 ++ code2,tabl2)
 
-transProgram :: Begin -> Table -> State Counr [Instr]
-transProgram (Program decls exprs) tabl =
-  do (table1, code1) <- transDeclarations decls table 
+transProgram :: Program -> Table -> State Count [Instr]
+transProgram (Begin decls exprs) tabl =
+  do (table1, code1) <- transDeclarations decls tabl
      tmp1 <- newTemp
      code2 <- transArguments exprs tmp1
-     return (code ++ code2)
+     return (code1 ++ code2)
