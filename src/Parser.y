@@ -75,9 +75,13 @@ Program : let DecList in ExprSeq {Begin $2 $4}
 DecList : Decl { [$1] }
         | DecList Decl  {$1 ++ [$2] }
 
-Decl : var identifier ':=' Expr { VarDeclaration $2 $4 }
-     | function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
-     | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9} 
+Decl : VarDecl { VarDeclaration $1}
+     | FuncDecl { FunDeclaration $1}
+
+VarDecl : var identifier ':=' Expr { Decl $2 $4 }
+
+FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
+         | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
 
 TypeFields : TypeField {[$1]}
            | TypeFields ',' TypeField {$1 ++ [$3]}
@@ -88,8 +92,8 @@ TypeId : int {TypeInt}
        | string {TypeString}
 
 Expr : num { Number $1 }
-     | identifier { Var $1}
      | stringContent { BuildString $1 }
+     | LValue { Var $1 }
      | Expr '+' Expr { Op Add $1 $3 }
      | Expr '-' Expr { Op Subtraction $1 $3 }
      | Expr '*' Expr { Op Multiplication $1 $3 } 
@@ -104,21 +108,23 @@ Expr : num { Number $1 }
      | Expr '&' Expr { Op And $1 $3 } 
      | Expr '|' Expr { Op Or $1 $3 } 
      | '-'Expr {Negative $2} 
-     | identifier '(' ExprList ')' { FuncCall $1 $3}
-     | '('ExprSeq')' { ExpSeq $2 }
+     | identifier '(' ExprList ')' {FuncCall $1 $3}
+     | '('ExprSeq')' {ExpSeq $2 }
      | if Expr then Expr {IfThen $2 $4}
-     | if Expr then Expr else Expr {IfThenElse $2 $4 $6}
+     | if Expr then Expr else Expr {IfThenElse $2 $4 $6} 
      | while Expr do Expr {While $2 $4 }
-     | identifier ':=' Expr {Assign $1 $3}
-     | break { Break }
-     | let VarDecList in ExprSeq end { LetIn $2 $4}
+     | LValue ':=' Expr {Assign $1 $3}
+     | break {Break }
+     | let VarDecList in ExprSeq end {LetIn $2 $4}
 
-VarDecList : Decl { [$1] }
-           | VarDecList Decl { $1 ++ [$2] }
+VarDecList : VarDecl { [$1] }
+           | VarDecList VarDecl { $1 ++ [$2] }
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }
         | ExprSeq ';' Expr { $1 ++ [$3] }
+
+LValue : identifier {VarName $1}
 
 ExprList : {- empty -} { [] }
          | Expr { [$1] }
@@ -131,27 +137,33 @@ type Identifier = String
 data Program = Begin [Decl] [Expr]
             deriving Show
 
-data Decl = VarDeclaration Identifier Expr
-          | FunctionDeclare Identifier [TypeField] Expr 
-          | FunctionDeclareTyped Identifier [TypeField] TypeId Expr
+data Decl = VarDeclaration VarDecl
+          | FunDeclaration FuncDecl
             deriving Show
 
-data TypeField = Declare Identifier TypeId
+data VarDecl = Decl Identifier Expr
+        deriving Show
+
+data FuncDecl = FunctionDeclare Identifier [TypeField] Expr
+              | FunctionDeclareTyped Identifier [TypeField] TypeId Expr
+            deriving Show
+
+data TypeField = Declare String TypeId
             deriving Show
 
 data TypeId = TypeInt
             | TypeString
-            deriving (Show, Eq)
+            deriving (Eq, Show)
 
 data Expr 
         = Number Int 
-        | Var Identifier
         | BuildString String
-        | Op BinOp Expr Expr
+        | Var LValue
+        | Op BinaryOperator Expr Expr
         | Negative Expr
         | FuncCall Identifier [Expr]
         | ExpSeq [Expr]
-        | Assign Identifier Expr
+        | Assign LValue Expr
         | ScanI 
         | PrintI Expr
         | Print Expr
@@ -159,10 +171,13 @@ data Expr
         | IfThenElse Expr Expr Expr
         | While Expr Expr
         | Break
-        | LetIn [Decl] [Expr]
+        | LetIn [VarDecl] [Expr]
         deriving Show
 
-data BinOp 
+data LValue = VarName Identifier
+        deriving Show
+
+data BinaryOperator 
         = Add 
         | Subtraction
         | Multiplication

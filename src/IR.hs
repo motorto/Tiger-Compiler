@@ -11,12 +11,11 @@ type Label = String
 
 data Instr = MOVE Temp Temp 
            | MOVEI Temp Int
-           | NEGATIVE Temp Temp
-           | OP BinOp Temp Temp Temp
-           | OPI BinOp Temp Temp Int
+           | OP BinaryOperator Temp Temp Temp
+           | OPI BinaryOperator Temp Temp Int
            | LABEL Label
            | JUMP Label
-           | COND Temp BinOp Temp Label Label
+           | COND Temp BinaryOperator Temp Label Label
            | CALL Temp Label [Temp]
            | RETURN Temp
            deriving (Eq, Show)
