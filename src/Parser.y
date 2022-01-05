@@ -148,7 +148,7 @@ data FuncDecl = FunctionDeclare Identifier [TypeField] Expr
               | FunctionDeclareTyped Identifier [TypeField] TypeId Expr
             deriving Show
 
-data TypeField = Declare String TypeId
+data TypeField = Declare Identifier TypeId
             deriving Show
 
 data TypeId = TypeInt

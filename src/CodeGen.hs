@@ -51,6 +51,14 @@ transExpression expression tabl dest = case expression of
                                 popTemp (length args)
                                 return (code)
 
+transArguments :: [Expr] -> Table -> State Count ([Instr],[Temp])
+transArguments [] tabl = return ([],[])
+transArguments (exp:tail) tabl = do t1 <- newTemp 
+                                    code1 <- transExpression exp tabl t1 
+                                    popTemp 1
+                                    (code2,tmps) <- transArguments tail tabl
+                                     return (code1 ++ code2,[t1] ++ tmps)
+
 transStatements :: Expr -> Table -> State Count [Instr] 
 transStatements statement tabl = case statement of 
                 (Assign (VarName x) expr) -> case Map.lookup x tabl of
@@ -115,6 +123,19 @@ transCondition (condition) tabl ltrue lfalse = case condition of
                             code1 <- transExpression exp1 tabl  t1
                             return (code1 ++  [COND t1 NotEquals "0" ltrue lfalse])
 
+transType :: TypeField -> Table -> State Count ([Temp],(Table))
+transType (typeField) tabl = case typeField of 
+          (Declare id typeId) 
+                      -> do t1 <- newTemp 
+                            newTable = Map.Insert id t1 tabl
+                            return (t1,tabl)
+
+transTypes :: [TypeField] -> Table -> State Count ([Temp],Table)
+transTypes [] tabl = return ([],tabl)
+transTypes (t:ts) tabl = do (t1,tabl1) <- transType t tabl
+                            (t2,tabl2) <- transTypes ts tabl1
+                            return (t1++t2,table2)
+
 transDeclaration :: Decl -> Table -> State Count ([Instr],Table)
 transDeclaration (declaration) tabl = case declaration of 
                  (VarDeclaration (Decl id exp1)) 
@@ -124,13 +145,13 @@ transDeclaration (declaration) tabl = case declaration of
                                   return (code,newTable)
                  (FunDeclaration (FunctionDeclare id args exp1))
                             -> do table1 <- Map.insert id id tabl 
-                                  (table2,tmps) <- transTypes args table1
+                                  (tmps,table2) <- transTypes args table1
                                   t1 <- newTemp 
                                   code1 <- transExpression exp1 table1 t1 
                                   return ([FUN id tmps code1],table1)
                  (FunDeclaration (FunctionDeclareTyped id args typ exp1))
                             -> do table1 <- Map.insert id exp1 tabl
-                                  (table2,tmps) <- transTypes table1 args 
+                                  (tmps,table2) <- transTypes table1 args 
                                   t1 <- newTemp 
                                   code1 <- transExpression exp1 table2 t1 
                                   return ([FUN id tmps code1],table1)
