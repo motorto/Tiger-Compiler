@@ -6,4 +6,5 @@ import Parser
 main :: IO ()
 main = do
   input <- getContents
-  print ( parser $ alexScanTokens input)
+  let ast <- parser $ alexScanTokens input)
+  print (evalState (transProgram ast Map.empty) (0,0))
