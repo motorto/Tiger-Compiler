@@ -1,10 +1,5 @@
 module CodeGen where
 
-{-
- - TODO: 
- -    transTypes
- -}
-
 import           Parser
 import           IR
 import           Data.Map (Map)
@@ -61,11 +56,12 @@ transArguments (exp:tail) tabl = do t1 <- newTemp
 
 transStatements :: Expr -> Table -> State Count [Instr] 
 transStatements statement tabl = case statement of 
-                (Assign (VarName x) expr) -> case Map.lookup x tabl of
-                                  Nothing -> error "undefined variable"
-                                  Just dest -> do t1 <- newTemp 
-                                                  code1 <- transExpression expr tabl t1
-                                                  return (code1 ++ [MOVE dest t1])
+                (Assign (VarName x) expr) 
+                            -> case Map.lookup x tabl of
+                                       Nothing -> error "undefined variable"
+                                       Just dest -> do t1 <- newTemp 
+                                                       code1 <- transExpression expr tabl t1
+                                                       return (code1 ++ [MOVE dest t1])
                 (IfThen cond exp1) 
                           -> do l1 <- newLabel
                                 l2 <- newLabel
@@ -162,11 +158,9 @@ transDeclarations (dec:decs) tabl = do (code1,tabl1) <- transDeclaration tabl de
                                        (code2,tabl2) <- transDeclarations tabl1 decs
                                        return (code1 ++ code2,tabl2)
 
-
-transArguments :: [Expr] -> Table -> State Count ([Instr],[Temp])
-transArguments [] tabl = return ([],[])
-transArguments (exp:tail) tabl = do t1 <- newTemp 
-                                    code1 <- transExpression exp tabl t1 
-                                    popTemp 1
-                                    (code2,tmps) <- transArguments tail tabl
-                                      return (code1 ++ code2,[t1] ++ tmps)
+transProgram :: Begin -> Table -> State Counr [Instr]
+transProgram (Program decls exprs) tabl =
+  do (table1, code1) <- transDeclarations decls table 
+     tmp1 <- newTemp
+     code2 <- transArguments exprs tmp1
+     return (code ++ code2)
