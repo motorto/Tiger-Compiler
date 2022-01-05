@@ -18,5 +18,6 @@ data Instr = MOVE Temp Temp
            | COND Temp BinaryOperator Temp Label Label
            | CALL Temp Label [Temp]
            | RETURN Temp
+           | FUN Label [Temp] [Instr]
            deriving (Eq, Show)
 
