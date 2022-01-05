@@ -53,7 +53,7 @@ transExpression expression tabl dest = case expression of
 
 transStatements :: Expr -> Table -> State Count [Instr] 
 transStatements statement tabl = case statement of 
-                (Assign x expr) -> case Map.lookup x tabl of
+                (Assign (VarName x) expr) -> case Map.lookup x tabl of
                                   Nothing -> error "undefined variable"
                                   Just dest -> do t1 <- newTemp 
                                                   code1 <- transExpression expr tabl t1
@@ -75,12 +75,17 @@ transStatements statement tabl = case statement of
                                 return (code1 ++ [LABEL l1] ++ code2 ++ 
                                         [JUMP l3,LABEL l2] ++ code3 ++ 
                                         [LABEL l3])
+               (LetIn vars exp1)
+                          -> do (newTable,code1) <- transDeclaration vars tabl
+                                t1 <- newTemp 
+                                code2 <- transExpression exp1 newTable t1 
+                                return (code1 ++ code2)
                 (While cond exp1) 
                           -> do l1 <- newLabel
                                 l2 <- newLabel
                                 l3 <- newLabel
                                 code1 <- transCondition cond tabl l2 l3
-                                code2 <- transStatements (ExpSeq exp1) tabl 
+                                code2 <- transStatements exp1 tabl 
                                 return ([LABEL l1] ++ code1 ++ 
                                         [LABEL l2] ++ code2 ++ 
                                         [JUMP l1,LABEL l3])
@@ -106,11 +111,6 @@ transCondition (condition) tabl ltrue lfalse = case condition of
                                 code2 <- transExpression exp2 tabl t2
                                 popTemp 2
                                 return (code1  ++ code2 ++ [COND t1 op t2 ltrue lfalse])
-               (LetIn vars exp1)
-                          -> do (newTable,code1) <- transDeclaration vars tabl
-                                t1 <- newTemp 
-                                code2 <- transExpression exp1 newTable t1 
-                                return (code1 ++ code2)
                (exp1) -> do t1 <- newTemp 
                             code1 <- transExpression exp1 tabl  t1
                             return (code1 ++  [COND t1 NotEquals "0" ltrue lfalse])
@@ -127,13 +127,20 @@ transDeclaration (declaration) tabl = case declaration of
                                   (table2,tmps) <- transTypes args table1
                                   t1 <- newTemp 
                                   code1 <- transExpression exp1 table1 t1 
-                                  return (table1, [FUN id tmps code1])
+                                  return ([FUN id tmps code1],table1)
                  (FunDeclaration (FunctionDeclareTyped id args typ exp1))
                             -> do table1 <- Map.insert id exp1 tabl
                                   (table2,tmps) <- transTypes table1 args 
                                   t1 <- newTemp 
                                   code1 <- transExpression exp1 table2 t1 
-                                  return (table1, [FUN id tmps code1])
+                                  return ([FUN id tmps code1],table1)
+
+transDeclarations :: [Decl] -> Table -> State Count ([Instr],Table)
+transDeclarations [] tabl = return ([],[])
+transDeclarations (dec:decs) tabl = do (code1,tabl1) <- transDeclaration tabl dec 
+                                       (code2,tabl2) <- transDeclarations tabl1 decs
+                                       return (code1 ++ code2,tabl2)
+
 
 transArguments :: [Expr] -> Table -> State Count ([Instr],[Temp])
 transArguments [] tabl = return ([],[])
@@ -141,4 +148,4 @@ transArguments (exp:tail) tabl = do t1 <- newTemp
                                     code1 <- transExpression exp tabl t1 
                                     popTemp 1
                                     (code2,tmps) <- transArguments tail tabl
-                                    return (code1 ++ code2,[t1] ++ tmps)
+                                      return (code1 ++ code2,[t1] ++ tmps)
