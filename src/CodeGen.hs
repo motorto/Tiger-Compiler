@@ -28,6 +28,7 @@ newLabel = do (t,l)<-get; put (t,l+1); return ("L"++show l)
 transExpression :: Expr -> Table -> Identifier -> State Count [Instr]
 transExpression expression tabl dest = case expression of 
                 (Number n) -> return [MOVEI dest n]
+                (BuildString str) -> return [MOVES dest str]
                 (Var (VarName x)) -> case Map.lookup x tabl of
                                 Just temp -> return [MOVE dest temp]
                                 Nothing -> error "invalid variable"
@@ -57,6 +58,7 @@ transExpression expression tabl dest = case expression of
                                 code1 <- transCondition cond tabl l1 l2
                                 t1 <- newTemp 
                                 code2 <- transExpression exp1 tabl t1
+                                popTemp 1
                                 return (code1 ++ [LABEL l1] ++
                                         code2 ++ [LABEL l2])
                 (IfThenElse cond exp1 exp2) 
@@ -68,6 +70,7 @@ transExpression expression tabl dest = case expression of
                                 code2 <- transExpression exp1 tabl t1
                                 t2 <- newTemp 
                                 code3 <- transExpression exp2 tabl t2
+                                popTemp 2
                                 return (code1 ++ [LABEL l1] ++ code2 ++ 
                                         [JUMP l3,LABEL l2] ++ code3 ++ 
                                         [LABEL l3])
@@ -78,6 +81,7 @@ transExpression expression tabl dest = case expression of
                                 code1 <- transCondition cond tabl l2 l3
                                 t1 <- newTemp 
                                 code2 <- transExpression exp1 tabl t1
+                                popTemp 1
                                 return ([LABEL l1] ++ code1 ++ 
                                         [LABEL l2] ++ code2 ++ 
                                         [JUMP l1,LABEL l3])

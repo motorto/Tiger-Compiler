@@ -7,6 +7,7 @@ type Label = String
 
 data Instr = MOVE Temp Temp 
            | MOVEI Temp Int
+           | MOVES Temp String 
            | OP BinaryOperator Temp Temp Temp
            | OPI BinaryOperator Temp Temp Int
            | LABEL Label
