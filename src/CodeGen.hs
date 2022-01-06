@@ -1,5 +1,11 @@
 module CodeGen where
 
+{-
+ - TODO: 
+ - BuildString  (expr)
+ - Break (expr)
+ -}
+
 import           Parser
 import           IR
 import           Data.Map (Map)
@@ -172,8 +178,9 @@ transDeclarations (dec:decs) tabl = do (code1,tabl1) <- transDeclaration dec tab
                                        (code2,tabl2) <- transDeclarations decs tabl1 
                                        return (code1 ++ code2,tabl2)
 
-transProgram :: Program -> Table -> State Count [Instr]
-transProgram (Begin decls exprs) tabl =
-  do (code1,table1) <- transDeclarations decls tabl
+transProgram :: Program -> State Count [Instr]
+transProgram (Begin decls exprs) =
+  do let tabl = Map.fromList [("print","print"), ("printi", "printi"), ("scani", "scani")]
+     (code1,table1) <- transDeclarations decls tabl
      (code2,tmps) <- transArguments exprs table1
      return (code1 ++ code2)

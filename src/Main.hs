@@ -12,6 +12,6 @@ main :: IO ()
 main = do
   input <- getContents
   let ast = parser (alexScanTokens input)
-  print ast
-  let code = evalState (transProgram ast Map.empty) (0,0)
+  writeFile "ast.txt" $ show ast ++ "\n"
+  let code = evalState (transProgram ast) (0,0)
   print code

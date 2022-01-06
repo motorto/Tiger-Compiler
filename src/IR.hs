@@ -1,7 +1,3 @@
-{-
-  3-Addresss Intermediate code
--}
-
 module IR where
 
 import Parser
