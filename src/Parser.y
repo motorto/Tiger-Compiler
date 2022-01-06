@@ -78,6 +78,10 @@ DecList : Decl { [$1] }
 Decl : VarDecl { VarDeclaration $1}
      | FuncDecl { FunDeclaration $1}
 
+VarDecList : VarDecl { [$1] }
+           | VarDecList VarDecl { $1 ++ [$2] }
+
+
 VarDecl : var identifier ':=' Expr { Decl $2 $4 }
 
 FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
@@ -116,9 +120,6 @@ Expr : num { Number $1 }
      | LValue ':=' Expr {Assign $1 $3}
      | break {Break }
      | let VarDecList in ExprSeq end {LetIn $2 $4}
-
-VarDecList : VarDecl { [$1] }
-           | VarDecList VarDecl { $1 ++ [$2] }
 
 ExprSeq : {- empty -} { [] }
         | Expr { [$1] }

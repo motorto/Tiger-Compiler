@@ -80,9 +80,8 @@ transStatements statement tabl = case statement of
                                         [JUMP l3,LABEL l2] ++ code3 ++ 
                                         [LABEL l3])
                 (LetIn vars exp1)
-                          -> do (newTable,code1) <- transDeclarations (VarDeclaration vars) tabl
-                                t1 <- newTemp 
-                                code2 <- transArguments exp1 newTable t1 
+                          -> do (code1,newTable) <- transVarDecls vars tabl
+                                (code2,tmps) <- transArguments exp1 newTable
                                 return (code1 ++ code2)
                 (While cond exp1) 
                           -> do l1 <- newLabel
@@ -93,6 +92,20 @@ transStatements statement tabl = case statement of
                                 return ([LABEL l1] ++ code1 ++ 
                                         [LABEL l2] ++ code2 ++ 
                                         [JUMP l1,LABEL l3])
+
+transVarDecl:: VarDecl -> Table -> State Count ([Instr],Table)
+transVarDecl (varDecl) tabl = case varDecl of 
+                 (Decl id exp1) 
+                            -> do t1 <- newTemp
+                                  code <- transExpression exp1 tabl t1
+                                  return (code,Map.insert id t1 tabl)
+
+transVarDecls :: [VarDecl] -> Table -> State Count ([Instr],Table)
+transVarDecls [] tabl = return ([],tabl)
+transVarDecls (v:vs) tabl = do (code1,tabl1) <- transVarDecl v tabl
+                               (code2,tabl2) <- transVarDecls vs tabl1
+                               return (code1++code2,tabl2)
+
 
 transCondition :: Expr -> Table -> Label -> Label -> State Count [Instr]
 transCondition (condition) tabl ltrue lfalse = case condition of 
@@ -119,12 +132,11 @@ transCondition (condition) tabl ltrue lfalse = case condition of
                             code1 <- transExpression exp1 tabl  t1
                             return (code1 ++  [COND t1 NotEquals "0" ltrue lfalse])
 
-transType :: TypeField -> Table -> State Count ([Temp],(Table))
+transType :: TypeField -> Table -> State Count ([Temp],Table)
 transType (typeField) tabl = case typeField of 
           (Declare id typeId) 
                       -> do t1 <- newTemp 
-                            let newTable = Map.insert id t1 tabl
-                            return ([t1],tabl)
+                            return ([t1],Map.insert id t1 tabl)
 
 transTypes :: [TypeField] -> Table -> State Count ([Temp],Table)
 transTypes [] tabl = return ([],tabl)
@@ -137,30 +149,30 @@ transDeclaration (declaration) tabl = case declaration of
                  (VarDeclaration (Decl id exp1)) 
                             -> do t1 <- newTemp
                                   code <- transExpression exp1 tabl t1
-                                  let newTable <- Map.insert id t1 tabl
-                                  return (code,newTable)
+                                  return (code,Map.insert id t1 tabl)
                  (FunDeclaration (FunctionDeclare id args exp1))
-                            -> do table1 <- Map.insert id id tabl 
+                            -> do 
+                                  let table1 = Map.insert id id tabl 
                                   (tmps,table2) <- transTypes args table1
-                                  t1 <- newTemp 
-                                  code1 <- transExpression exp1 table1 t1 
-                                  return ([FUN id tmps code1],table1)
-                 (FunDeclaration (FunctionDeclareTyped id args typ exp1))
-                            -> do table1 <- Map.insert id exp1 tabl
-                                  (tmps,table2) <- transTypes table1 args 
                                   t1 <- newTemp 
                                   code1 <- transExpression exp1 table2 t1 
                                   return ([FUN id tmps code1],table1)
+                 (FunDeclaration (FunctionDeclareTyped id args typ exp1))
+                            -> do 
+                                  let table1 = Map.insert id id tabl
+                                  (tmps,table2) <- transTypes args table1 
+                                  t1 <- newTemp 
+                                  code1 <- transExpression exp1 table2 t1 
+                                  return ([FUN id tmps code1],table2)
 
 transDeclarations :: [Decl] -> Table -> State Count ([Instr],Table)
-transDeclarations [] tabl = return ([],[])
-transDeclarations (dec:decs) tabl = do (code1,tabl1) <- transDeclaration tabl dec 
-                                       (code2,tabl2) <- transDeclarations tabl1 decs
+transDeclarations [] tabl = return ([],tabl)
+transDeclarations (dec:decs) tabl = do (code1,tabl1) <- transDeclaration dec tabl 
+                                       (code2,tabl2) <- transDeclarations decs tabl1 
                                        return (code1 ++ code2,tabl2)
 
 transProgram :: Program -> Table -> State Count [Instr]
 transProgram (Begin decls exprs) tabl =
-  do (table1, code1) <- transDeclarations decls tabl
-     tmp1 <- newTemp
-     code2 <- transArguments exprs tmp1
+  do (code1,table1) <- transDeclarations decls tabl
+     (code2,tmps) <- transArguments exprs table1
      return (code1 ++ code2)
