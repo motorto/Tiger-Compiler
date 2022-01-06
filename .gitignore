@@ -25,3 +25,4 @@ cabal.project.local~
 *arser.hs
 *.info
 Main
+ast.txt
