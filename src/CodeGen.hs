@@ -56,12 +56,6 @@ transArguments (exp:tail) tabl = do t1 <- newTemp
 
 transStatements :: Expr -> Table -> State Count [Instr] 
 transStatements statement tabl = case statement of 
-                (Assign (VarName x) expr) 
-                            -> case Map.lookup x tabl of
-                                       Nothing -> error "undefined variable"
-                                       Just dest -> do t1 <- newTemp 
-                                                       code1 <- transExpression expr tabl t1
-                                                       return (code1 ++ [MOVE dest t1])
                 (IfThen cond exp1) 
                           -> do l1 <- newLabel
                                 l2 <- newLabel
@@ -79,10 +73,6 @@ transStatements statement tabl = case statement of
                                 return (code1 ++ [LABEL l1] ++ code2 ++ 
                                         [JUMP l3,LABEL l2] ++ code3 ++ 
                                         [LABEL l3])
-                (LetIn vars exp1)
-                          -> do (code1,newTable) <- transVarDecls vars tabl
-                                (code2,tmps) <- transArguments exp1 newTable
-                                return (code1 ++ code2)
                 (While cond exp1) 
                           -> do l1 <- newLabel
                                 l2 <- newLabel
@@ -92,6 +82,16 @@ transStatements statement tabl = case statement of
                                 return ([LABEL l1] ++ code1 ++ 
                                         [LABEL l2] ++ code2 ++ 
                                         [JUMP l1,LABEL l3])
+                (Assign (VarName x) expr) 
+                            -> case Map.lookup x tabl of
+                                       Nothing -> error "undefined variable"
+                                       Just dest -> do t1 <- newTemp 
+                                                       code1 <- transExpression expr tabl t1
+                                                       return (code1 ++ [MOVE dest t1])
+                (LetIn vars exp1)
+                          -> do (code1,newTable) <- transVarDecls vars tabl
+                                (code2,tmps) <- transArguments exp1 newTable
+                                return (code1 ++ code2)
 
 transVarDecl:: VarDecl -> Table -> State Count ([Instr],Table)
 transVarDecl (varDecl) tabl = case varDecl of 
