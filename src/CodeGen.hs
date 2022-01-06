@@ -45,22 +45,12 @@ transExpression expression tabl dest = case expression of
                           -> do (code,temps) <- transArguments args tabl
                                 popTemp (length args)
                                 return (code)
-
-transArguments :: [Expr] -> Table -> State Count ([Instr],[Temp])
-transArguments [] tabl = return ([],[])
-transArguments (exp:tail) tabl = do t1 <- newTemp 
-                                    code1 <- transExpression exp tabl t1 
-                                    popTemp 1
-                                    (code2,tmps) <- transArguments tail tabl
-                                    return (code1 ++ code2,[t1] ++ tmps)
-
-transStatements :: Expr -> Table -> State Count [Instr] 
-transStatements statement tabl = case statement of 
                 (IfThen cond exp1) 
                           -> do l1 <- newLabel
                                 l2 <- newLabel
                                 code1 <- transCondition cond tabl l1 l2
-                                code2 <- transStatements exp1 tabl 
+                                t1 <- newTemp 
+                                code2 <- transExpression exp1 tabl t1
                                 return (code1 ++ [LABEL l1] ++
                                         code2 ++ [LABEL l2])
                 (IfThenElse cond exp1 exp2) 
@@ -68,8 +58,10 @@ transStatements statement tabl = case statement of
                                 l2 <- newLabel
                                 l3 <- newLabel
                                 code1 <- transCondition cond tabl l1 l2
-                                code2 <- transStatements exp1 tabl 
-                                code3 <- transStatements exp2 tabl 
+                                t1 <- newTemp 
+                                code2 <- transExpression exp1 tabl t1
+                                t2 <- newTemp 
+                                code3 <- transExpression exp2 tabl t2
                                 return (code1 ++ [LABEL l1] ++ code2 ++ 
                                         [JUMP l3,LABEL l2] ++ code3 ++ 
                                         [LABEL l3])
@@ -78,7 +70,8 @@ transStatements statement tabl = case statement of
                                 l2 <- newLabel
                                 l3 <- newLabel
                                 code1 <- transCondition cond tabl l2 l3
-                                code2 <- transStatements exp1 tabl 
+                                t1 <- newTemp 
+                                code2 <- transExpression exp1 tabl t1
                                 return ([LABEL l1] ++ code1 ++ 
                                         [LABEL l2] ++ code2 ++ 
                                         [JUMP l1,LABEL l3])
@@ -92,6 +85,14 @@ transStatements statement tabl = case statement of
                           -> do (code1,newTable) <- transVarDecls vars tabl
                                 (code2,tmps) <- transArguments exp1 newTable
                                 return (code1 ++ code2)
+
+transArguments :: [Expr] -> Table -> State Count ([Instr],[Temp])
+transArguments [] tabl = return ([],[])
+transArguments (exp:tail) tabl = do t1 <- newTemp 
+                                    code1 <- transExpression exp tabl t1 
+                                    popTemp 1
+                                    (code2,tmps) <- transArguments tail tabl
+                                    return (code1 ++ code2,[t1] ++ tmps)
 
 transVarDecl:: VarDecl -> Table -> State Count ([Instr],Table)
 transVarDecl (varDecl) tabl = case varDecl of 
