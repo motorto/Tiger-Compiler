@@ -10,7 +10,7 @@ cabal-version:       >=1.10
                      
 executable Main
   main-is:             Main.hs
-  other-modules:       Lexer,Parser,CodeGen,IR
+  other-modules:       Lexer,Parser,CodeGen,IR,MipsGen
   build-tools:         alex,happy
   build-depends:       base,array,containers,mtl
   hs-source-dirs:      src
