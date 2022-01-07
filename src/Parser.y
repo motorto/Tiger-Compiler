@@ -1,4 +1,4 @@
--- vim: filetype=haskell 
+-- vim: filetype=haskell
 
 {
 module Parser where
@@ -165,9 +165,6 @@ data Expr
         | FuncCall Identifier [Expr]
         | ExpSeq [Expr]
         | Assign LValue Expr
-        | ScanI 
-        | PrintI Expr
-        | Print Expr
         | IfThen Expr Expr
         | IfThenElse Expr Expr Expr
         | While Expr Expr
