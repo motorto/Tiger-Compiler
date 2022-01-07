@@ -11,7 +11,7 @@ start [] = []
 start (first : rest) =
   let code1 = transToMips first
       code2 = start rest
-   in code1:code2
+   in code1 : code2
 
 transToMips :: Instr -> String
 transToMips instruction = case instruction of
@@ -29,3 +29,11 @@ transToMips instruction = case instruction of
     Multiplication -> "mult" ++ show t1 ++ "," ++ show t2 ++ "," ++ show i
     Division -> "div" ++ show t2 ++ "," ++ show i ++ "\n" ++ "mflo" ++ show t1
     Module -> "div" ++ show t2 ++ "," ++ show i ++ "\n" ++ "mfhi" ++ show t1
+  (JUMP l1) -> "j" ++ show l1
+  (COND t1 op t2 l1 l2) -> case op of
+    Less -> "blt" ++ show t1 ++ "," ++ show t2 ++ "," ++ l1 ++ "\n" ++ "j" ++ l2
+    LessEquals -> "bgt" ++ show t1 ++ "," ++ show t2 ++ "," ++ l2 ++ "\n" ++ "j" ++ l1
+    Bigger -> "bgt" ++ show t1 ++ "," ++ show t2 ++ "," ++ l1 ++ "\n" ++ "j" ++ l2
+    BiggerEquals -> "blt" ++ show t1 ++ "," ++ show t2 ++ "," ++ l2 ++ "\n" ++ "j" ++ l1
+    Equals -> "bne" ++ show t1 ++ "," ++ show t2 ++ "," ++ l2 ++ "\n" ++ "j" ++ l1
+    NotEquals -> "beq" ++ show t1 ++ "," ++ show t2 ++ "," ++ l2 ++ "\n" ++ "j" ++ l1
