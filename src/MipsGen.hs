@@ -29,7 +29,7 @@ transToMips instruction = case instruction of
     Multiplication -> "mult" ++ " " ++ t1 ++ " " ++ "," ++ " " ++ t2 ++ " " ++ "," ++ " " ++ show i
     Division -> "div" ++ " " ++ t2 ++ " " ++ "," ++ " " ++ show i ++ "\n" ++ "mflo" ++ " " ++ t1
     Module -> "div" ++ " " ++ t2 ++ " " ++ "," ++ " " ++ show i ++ "\n" ++ "mfhi" ++ " " ++ t1
-  (LABEL l1) -> "j" ++ " " ++ l1
+  (LABEL l1) -> l1 ++ " " ++ ":" ++ " "
   (JUMP l1) -> "j" ++ " " ++ l1
   (COND t1 op t2 l1 l2) -> case op of
     Less -> "blt" ++ " " ++ t1 ++ " " ++ "," ++ " " ++ t2 ++ " " ++ "," ++ " " ++ l1 ++ "\n" ++ "j" ++ " " ++ l2
