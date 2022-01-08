@@ -6,8 +6,12 @@ import CodeGen
 import IR
 import Parser
 
+printPlease :: [String] -> String
+printPlease [] = "\n"
+printPlease (x:xs) = x ++ "\n" ++ printPlease xs
+
 start :: [Instr] -> [String]
-start instruction = ioFunctions "printi" ++ ioFunctions "scani" ++ start' instruction
+start instruction =  start' instruction ++ ioFunctions "printi" ++ ioFunctions "scani"
 
 start' :: [Instr] -> [String]
 start' [] = []
@@ -47,7 +51,7 @@ transToMips instruction = case instruction of
     Equals -> ["bne " ++ t1 ++ " , " ++ t2 ++ " , " ++ l2, "j " ++ l1]
     NotEquals -> ["beq " ++ t1 ++ " , " ++ t2 ++ " , " ++ l2, "j " ++ l1]
   (CALL t name args) -> callFunction name args 0 ++ transToMips (MOVE t "$v0")
-  (FUN name args code) -> transToMips (LABEL name) ++ ["sw $fp, -4($sp)", "sw $ra, -8($sp)", "la $fp, 0($sp)"] ++ start code
+  (FUN name args code) -> transToMips (LABEL name) ++ ["sw $fp, -4($sp)", "sw $ra, -8($sp)", "la $fp, 0($sp)"] ++ start' code
   (RETURN t) -> ["move $v0, " ++ show t, "la $sp, 0($fp)", "lw $ra, -8($sp)", "lw $fp, -4($sp)", "jr $ra"]
 
 callFunction :: Label -> [Temp] -> Int -> [String]

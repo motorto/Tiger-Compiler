@@ -212,4 +212,4 @@ transProgram (Begin decls exprs) =
     let tabl = Map.fromList [("print", "print"), ("printi", "printi"), ("scani", "scani")]
     (code1, table1) <- transDeclarations decls tabl
     (code2, tmps) <- transArguments exprs table1
-    return (code1 ++ code2)
+    return (code2 ++ code1)
