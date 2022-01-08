@@ -7,11 +7,19 @@ import IR
 import Parser
 
 start :: [Instr] -> [String]
-start [] = []
-start (first : rest) =
+start instruction = ioFunctions "printi" ++ ioFunctions "scani" ++ start' instruction
+
+start' :: [Instr] -> [String]
+start' [] = []
+start' (first : rest) =
   let code1 = transToMips first
-      code2 = start rest
+      code2 = start' rest
    in code1 ++ code2
+
+ioFunctions :: String -> [String]
+ioFunctions function = case function of
+  "printi" -> transToMips (LABEL "printi") ++ ["li $v0, 1", "lw $a0, 0($sp)", "syscall", "jr $ra"]
+  "scani" -> transToMips (LABEL "scani") ++ ["li $v0, 5", "syscall", "jr $ra"]
 
 transToMips :: Instr -> [String]
 transToMips instruction = case instruction of
@@ -20,13 +28,13 @@ transToMips instruction = case instruction of
   (OP op t1 t2 t3) -> case op of
     Add -> ["add " ++ t1 ++ " , " ++ t2 ++ " , " ++ t3]
     Subtraction -> ["sub " ++ t1 ++ " , " ++ t2 ++ " , " ++ t3]
-    Multiplication -> ["mult " ++ t1 ++ " , " ++ t2 ++ " , " ++ t3]
+    Multiplication -> ["mult " ++ t2 ++ " , " ++ t3, "mflo " ++ t1]
     Division -> ["div " ++ t2 ++ " , " ++ t3, "mflo " ++ t1]
     Module -> ["div " ++ t2 ++ " , " ++ t3, "mfhi " ++ t1]
   (OPI op t1 t2 i) -> case op of
     Add -> ["addi " ++ t1 ++ " , " ++ t2 ++ " , " ++ show i]
-    Subtraction -> ["sub " ++ t1 ++ " , "  ++ t2 ++ " , " ++ show i]
-    Multiplication -> ["mult " ++ t1 ++ " , " ++ t2 ++ " , " ++ show i]
+    Subtraction -> ["sub " ++ t1 ++ " , " ++ t2 ++ " , " ++ show i]
+    Multiplication -> ["mult " ++ t2 ++ " , " ++ show i ++ " , ", "mflo " ++ t1]
     Division -> ["div " ++ t2 ++ " , " ++ show i, "mflo " ++ t1]
     Module -> ["div " ++ t2 ++ " , " ++ show i, "mfhi " ++ t1]
   (LABEL l1) -> [l1 ++ ": "]
