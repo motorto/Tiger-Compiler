@@ -26,6 +26,7 @@ then { Token_Then }
 var { Token_Var }
 while { Token_While }
 to { Token_To }
+not { Token_Not }
 
 -- punctuations signs
 ',' { Token_Comma }
@@ -111,6 +112,7 @@ Expr : num { Number $1 }
      | Expr '>=' Expr { Op BiggerEquals $1 $3 } 
      | Expr '&' Expr { Op And $1 $3 } 
      | Expr '|' Expr { Op Or $1 $3 } 
+     | not Expr {Not $2} 
      | '-'Expr {Negative $2} 
      | identifier '(' ExprList ')' {FuncCall $1 $3}
      | '('ExprSeq')' {ExpSeq $2 }
@@ -161,6 +163,7 @@ data Expr
         | BuildString String
         | Var LValue
         | Op BinaryOperator Expr Expr
+        | Not Expr
         | Negative Expr
         | FuncCall Identifier [Expr]
         | ExpSeq [Expr]

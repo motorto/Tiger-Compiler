@@ -31,8 +31,9 @@ then { \_ -> Token_Then }
 var { \_ -> Token_Var }
 while { \_ -> Token_While }
 to { \_ -> Token_To }
-int { \_ -> Token_Type_Integer}
-string { \_ -> Token_Type_String}
+int { \_ -> Token_Type_Integer }
+string { \_ -> Token_Type_String }
+not { \_ -> Token_Not }
 
 -- punctuations signs
 "," { \_ -> Token_Comma }
@@ -70,46 +71,47 @@ $alpha($alpha|$digit)* { \s -> Token_Identifier s }
 
 {
 data Token
-  = Token_If
+  = Token_And
+  | Token_Assign
+  | Token_Bigger_Or_Equal_Then
+  | Token_Bigger_Then
   | Token_Break
+  | Token_Collon
+  | Token_Comma
+  | Token_Divided
   | Token_Do
   | Token_Else
   | Token_End
+  | Token_Equal
   | Token_For
   | Token_Function
+  | Token_Identifier String
+  | Token_If
   | Token_In
+  | Token_Less_Or_Equal_Then
+  | Token_Less_Then
   | Token_Let
+  | Token_Lparenth
+  | Token_Lsquare_Parenth
+  | Token_Minus
+  | Token_Mod
+  | Token_Not
+  | Token_Not_Equals
+  | Token_Number Int
   | Token_Of
+  | Token_Or
+  | Token_Plus
+  | Token_Rparenth
+  | Token_Rsquare_Parenth
+  | Token_Semi_Collon
+  | Token_String String
   | Token_Then
+  | Token_Times
+  | Token_To
+  | Token_Type_Integer
+  | Token_Type_String 
   | Token_Var
   | Token_While
-  | Token_To
-  | Token_Comma
-  | Token_Collon
-  | Token_Semi_Collon
-  | Token_Lparenth
-  | Token_Rparenth
-  | Token_Lsquare_Parenth
-  | Token_Rsquare_Parenth
-  | Token_Plus
-  | Token_Minus
-  | Token_Times
-  | Token_Divided
-  | Token_Mod
-  | Token_Equal
-  | Token_Not_Equals
-  | Token_Less_Then
-  | Token_Bigger_Then
-  | Token_Bigger_Or_Equal_Then
-  | Token_Less_Or_Equal_Then
-  | Token_And
-  | Token_Or
-  | Token_Assign
-  | Token_Number Int
-  | Token_Identifier String
-  | Token_String String
-  | Token_Type_String 
-  | Token_Type_Integer
   deriving (Eq, Show)
 }
 
