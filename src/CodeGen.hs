@@ -139,6 +139,8 @@ transCondition :: Expr -> Table -> Label -> Label -> State Count [Instr]
 transCondition condition tabl ltrue lfalse = case condition of
   (Number 0) -> do return [JUMP lfalse]
   (Number n) -> do return [JUMP ltrue]
+  (Not expr) -> do
+    return transCondition expr tabl lfalse ltrue
   (Op And exp1 exp2) ->
     do
       l1 <- newLabel
