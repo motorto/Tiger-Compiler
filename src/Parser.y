@@ -17,6 +17,7 @@ break { Token_Break }
 do { Token_Do }
 else { Token_Else }
 end { Token_End }
+to { Token_To }
 for { Token_For }
 function { Token_Function }
 in { Token_In }
@@ -25,7 +26,6 @@ of { Token_Of }
 then { Token_Then }
 var { Token_Var }
 while { Token_While }
-to { Token_To }
 not { Token_Not }
 
 -- punctuations signs
@@ -88,7 +88,8 @@ VarDecl : var identifier ':=' Expr { Decl $2 $4 }
 FuncDecl : function identifier'('TypeFields')' '=' Expr { FunctionDeclare $2 $4 $7}
          | function identifier'('TypeFields')'':' TypeId '=' Expr { FunctionDeclareTyped $2 $4 $7 $9}
 
-TypeFields : TypeField {[$1]}
+TypeFields : {- empty -} { [] } 
+           | TypeField {[$1]}
            | TypeFields ',' TypeField {$1 ++ [$3]}
 
 TypeField : identifier ':' TypeId {Declare $1 $3}
@@ -118,6 +119,7 @@ Expr : num { Number $1 }
      | '('ExprSeq')' {ExpSeq $2 }
      | if Expr then Expr {IfThen $2 $4}
      | if Expr then Expr else Expr {IfThenElse $2 $4 $6} 
+     | for Expr to Expr do Expr {ForDo $2 $4 $6}
      | while Expr do Expr {While $2 $4 }
      | LValue ':=' Expr {Assign $1 $3}
      | break {Break }
@@ -168,6 +170,7 @@ data Expr
         | FuncCall Identifier [Expr]
         | ExpSeq [Expr]
         | Assign LValue Expr
+        | ForDo Expr Expr Expr
         | IfThen Expr Expr
         | IfThenElse Expr Expr Expr
         | While Expr Expr

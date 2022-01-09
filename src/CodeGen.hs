@@ -80,6 +80,13 @@ transExpression expression tabl dest breakLabel = case expression of
             ++ code3
             ++ [LABEL l3]
         )
+  (ForDo exp1 bound exp2) ->
+    do
+      l1 <- newLabel
+      l2 <- newLabel
+      l3 <- newLabel
+      code1 <- transCondition (Op Less exp1 bound) tabl l2 l3
+      return (code1 ++ [LABEL l1])
   (While cond exp1) ->
     do
       l1 <- newLabel
@@ -103,6 +110,10 @@ transExpression expression tabl dest breakLabel = case expression of
         code1 <- transExpression expr tabl t1 breakLabel
         popTemp 1
         return (code1 ++ [MOVE dest t1])
+  (Not expr) -> do
+    l1 <- newLabel
+    l2 <- newLabel
+    transCondition (Not expr) tabl l1 l2
   (LetIn vars exp1) ->
     do
       (code1, newTable) <- transVarDecls vars tabl
@@ -140,8 +151,7 @@ transCondition condition tabl ltrue lfalse = case condition of
   (Number 0) -> do return [JUMP lfalse]
   (Number n) -> do return [JUMP ltrue]
   (Not expr) -> do
-    code1 <- transCondition expr tabl lfalse ltrue
-    return code1
+    transCondition expr tabl lfalse ltrue
   (Op And exp1 exp2) ->
     do
       l1 <- newLabel
