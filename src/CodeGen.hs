@@ -56,7 +56,7 @@ transExpression expression tabl dest breakLabel = case expression of
       l2 <- newLabel
       code1 <- transCondition cond tabl l1 l2
       t1 <- newTemp
-      code2 <- transExpression exp1 tabl t1 breakLabel
+      code2 <- transExpression exp1 tabl t1 l2
       popTemp 1
       return
         ( code1 ++ [LABEL l1]
@@ -70,9 +70,9 @@ transExpression expression tabl dest breakLabel = case expression of
       l3 <- newLabel
       code1 <- transCondition cond tabl l1 l2
       t1 <- newTemp
-      code2 <- transExpression exp1 tabl t1 breakLabel
+      code2 <- transExpression exp1 tabl t1 l3
       t2 <- newTemp
-      code3 <- transExpression exp2 tabl t2 breakLabel
+      code3 <- transExpression exp2 tabl t2 l3
       popTemp 2
       return
         ( code1 ++ [LABEL l1] ++ code2
