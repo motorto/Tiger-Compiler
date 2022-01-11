@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wno-incomplete-patterns #-}
 module CodeGen where
 
 import Control.Monad.State
@@ -42,12 +43,12 @@ transExpression expression tabl dest breakLabel = case expression of
       return (code1 ++ [OP Subtraction t1 "0" t1])
   (FuncCall id args) ->
     do
-      (code, temps) <- transArguments args tabl
+      (code, temps) <- transExpressions args tabl
       popTemp (length args)
       return (code ++ [CALL dest id temps])
   (ExpSeq args) ->
     do
-      (code, temps) <- transArguments args tabl
+      (code, temps) <- transExpressions args tabl
       popTemp (length args)
       return code
   (IfThen cond exp1) ->
@@ -80,13 +81,6 @@ transExpression expression tabl dest breakLabel = case expression of
             ++ code3
             ++ [LABEL l3]
         )
-  (ForDo exp1 bound exp2) ->
-    do
-      l1 <- newLabel
-      l2 <- newLabel
-      l3 <- newLabel
-      code1 <- transCondition (Op Less exp1 bound) tabl l2 l3
-      return (code1 ++ [LABEL l1])
   (While cond exp1) ->
     do
       l1 <- newLabel
@@ -117,18 +111,30 @@ transExpression expression tabl dest breakLabel = case expression of
   (LetIn vars exp1) ->
     do
       (code1, newTable) <- transVarDecls vars tabl
-      (code2, tmps) <- transArguments exp1 newTable
+      (code2, tmps) <- transExpressions exp1 newTable
       popTemp (length tmps)
       return (code1 ++ code2)
   Break ->
     do return [JUMP breakLabel]
+  -- (ForDo exp1 bound exp2) -> -- for t = 0 to expr do expr
+  --   do
+  --     temp <- newTemp
+  --     l1 <- newLabel
+  --     l2 <- newLabel
+  --     l3 <- newLabel
+  --     (code1,tempTable) <- transVarDecl exp1 tabl
+  --     codeC <- transCondition (Op Less exp1 bound) tempTable l2 l3
+  --     codeE <- transExpressions (exp2 ++ Op Add exp1 1) tempTable dest l3
+  --     return (code1 ++ [LABEL l1] ++ CodeC ++ [LABEL l2] ++ codeE ++ [JUMP l1,LABEL l3] )
 
-transArguments :: [Expr] -> Table -> State Count ([Instr], [Temp])
-transArguments [] tabl = return ([], [])
-transArguments (exp : tail) tabl = do
+transExpressions :: [Expr] -> Table -> State Count ([Instr], [Temp])
+transExpressions [] tabl = return ([], [])
+transExpressions (exp : tail) tabl = do
   t1 <- newTemp
   code1 <- transExpression exp tabl t1 ""
-  (code2, tmps) <- transArguments tail tabl
+  popTemp 1
+  (code2, tmps) <- transExpressions tail tabl
+  popTemp (length tmps)
   return (code1 ++ code2, t1 : tmps)
 
 transVarDecl :: VarDecl -> Table -> State Count ([Instr], Table)
@@ -224,5 +230,5 @@ transProgram (Begin decls exprs) =
   do
     let tabl = Map.fromList [("print", "print"), ("printi", "printi"), ("scani", "scani")]
     (code1, table1) <- transDeclarations decls tabl
-    (code2, tmps) <- transArguments exprs table1
+    (code2, tmps) <- transExpressions exprs table1
     return (code1 ++ code2)

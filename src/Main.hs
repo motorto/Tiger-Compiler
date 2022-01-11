@@ -17,4 +17,3 @@ main = do
   writeFile "3addr.txt" $ show code ++ "\n"
   let mips = printPlease $ start code
   writeFile "mips.asm" mips
-  putStr mips
