@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wno-incomplete-patterns #-}
+
 module CodeGen where
 
 import Control.Monad.State
@@ -116,16 +117,24 @@ transExpression expression tabl dest breakLabel = case expression of
       return (code1 ++ code2)
   Break ->
     do return [JUMP breakLabel]
-  -- (ForDo exp1 bound exp2) -> -- for t = 0 to expr do expr
-  --   do
-  --     temp <- newTemp
-  --     l1 <- newLabel
-  --     l2 <- newLabel
-  --     l3 <- newLabel
-  --     (code1,tempTable) <- transVarDecl exp1 tabl
-  --     codeC <- transCondition (Op Less exp1 bound) tempTable l2 l3
-  --     codeE <- transExpressions (exp2 ++ Op Add exp1 1) tempTable dest l3
-  --     return (code1 ++ [LABEL l1] ++ CodeC ++ [LABEL l2] ++ codeE ++ [JUMP l1,LABEL l3] )
+  (ForDo (Assign (VarName n) x) bound exp2) ->
+    do
+      tCondition <- newTemp
+      code1 <- transExpression (Assign (VarName n) x) (Map.insert n tCondition tabl) tCondition breakLabel
+      l1 <- newLabel
+      l2 <- newLabel
+      l3 <- newLabel
+      code2 <- transCondition (Op Less (Assign (VarName n) x) bound) (Map.insert n tCondition tabl) l2 l3
+      code3 <- transExpression exp2 (Map.insert n tCondition tabl) dest l3
+      return
+        ( code1 -- Init
+            ++ [LABEL l1] -- Jump to cond
+            ++ code2 -- cond
+            ++ [LABEL l2] -- Loop code label
+            ++ code3 -- code
+            ++ [OPI Add tCondition tCondition 1] -- Inc loop var
+            ++ [JUMP l1, LABEL l3] -- Jump to cond, and exit label
+        )
 
 transExpressions :: [Expr] -> Table -> State Count ([Instr], [Temp])
 transExpressions [] tabl = return ([], [])
