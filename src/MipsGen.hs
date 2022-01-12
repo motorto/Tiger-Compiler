@@ -11,7 +11,7 @@ printPlease [] = "\n"
 printPlease (x:xs) = x ++ "\n" ++ printPlease xs
 
 start :: [Instr] -> [String]
-start instruction =  start' instruction ++ ioFunctions "printi" ++ ioFunctions "scani"
+start instruction = [".text"] ++ start' instruction ++ ioFunctions "printi" ++ ioFunctions "scani"
 
 start' :: [Instr] -> [String]
 start' [] = []

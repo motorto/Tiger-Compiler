@@ -1,0 +1,8 @@
+let 
+  function fact(n: int): int = 
+     if n>0 then break
+     else 1
+in 
+	break;
+  printi(fact(10)) 
+
